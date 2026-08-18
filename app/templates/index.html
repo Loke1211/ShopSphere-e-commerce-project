@@ -1,0 +1,345 @@
+{% extends "base.html" %}
+
+{% block title %}ShopSphere | Home{% endblock %}
+
+{% block content %}
+
+<!-- ================= HERO ================= -->
+
+<section class="premium-hero">
+
+    <div class="container">
+
+        <div class="hero-content">
+
+            <span class="hero-badge">
+                ✦ MODERN E-COMMERCE EXPERIENCE
+            </span>
+
+            <h1>
+                Discover products
+                <span>you love.</span>
+            </h1>
+
+            <p>
+                Explore quality products with a seamless shopping
+                experience powered by Python Flask and MySQL.
+            </p>
+
+
+            <!-- SEARCH -->
+
+            <form class="premium-search" method="get">
+
+                <div class="search-input-wrapper">
+
+                    <span class="search-icon">
+                        ⌕
+                    </span>
+
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{ q }}"
+                        placeholder="Search products..."
+                    >
+
+                </div>
+
+
+                <div class="category-wrapper">
+
+                    <select name="category">
+
+                        <option value="">
+                            All categories
+                        </option>
+
+                        {% for c in categories %}
+
+                        <option
+                            value="{{ c.id }}"
+                            {% if category_id == c.id %}
+                            selected
+                            {% endif %}
+                        >
+                            {{ c.name }}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="premium-search-btn"
+                >
+                    Search
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= PRODUCTS ================= -->
+
+<section class="products-section">
+
+    <div class="container">
+
+
+        <!-- HEADER -->
+
+        <div class="products-header">
+
+            <div>
+
+                <span class="section-label">
+                    OUR COLLECTION
+                </span>
+
+                <h2>
+                    Featured Products
+                </h2>
+
+                <p>
+                    Find something you'll love.
+                </p>
+
+            </div>
+
+
+            <div class="results-count">
+
+                {{ products|length }}
+
+                {% if products|length == 1 %}
+                    product
+                {% else %}
+                    products
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- PRODUCT GRID -->
+
+        <div class="row g-4">
+
+            {% for p in products %}
+
+            <div class="col-sm-6 col-lg-3">
+
+                <article class="premium-product-card">
+
+
+                    <!-- IMAGE -->
+
+                    <div class="product-image-wrapper">
+
+                        <img
+                            src="{{ p.image_url or 'https://via.placeholder.com/600x450?text=ShopSphere' }}"
+                            alt="{{ p.name }}"
+                            class="premium-product-image"
+                        >
+
+
+                        <!-- CATEGORY -->
+
+                        <span class="product-category">
+                            {{ p.category.name }}
+                        </span>
+
+
+                        <!-- WISHLIST -->
+
+                        {% if session.get('user_id') %}
+
+                        <form
+                            method="post"
+                            action="{{ url_for('main.toggle_wishlist', product_id=p.id) }}"
+                            class="wishlist-form"
+                        >
+
+                            <button
+                                type="submit"
+                                class="wishlist-btn"
+                                title="Add to wishlist"
+                            >
+                                ♡
+                            </button>
+
+                        </form>
+
+                        {% endif %}
+
+
+                        <!-- STOCK -->
+
+                        {% if p.stock > 0 %}
+
+                        <span class="stock-badge available">
+                            ● In Stock
+                        </span>
+
+                        {% else %}
+
+                        <span class="stock-badge unavailable">
+                            ● Out of Stock
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- BODY -->
+
+                    <div class="premium-product-body">
+
+
+                        <h3>
+                            {{ p.name }}
+                        </h3>
+
+
+                        <p class="product-description">
+
+                            {{ p.description }}
+
+                        </p>
+
+
+                        <!-- PRICE -->
+
+                        <div class="product-meta">
+
+                            <div class="product-price">
+                                ₹{{ "%.2f"|format(p.price) }}
+                            </div>
+
+
+                            <div class="product-stock">
+
+                                {% if p.stock > 0 %}
+
+                                {{ p.stock }} left
+
+                                {% else %}
+
+                                Sold out
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ACTIONS -->
+
+                        <div class="product-actions">
+
+
+                            <a
+                                href="{{ url_for('main.product_detail', product_id=p.id) }}"
+                                class="view-product-btn"
+                            >
+                                View Details
+                                <span>→</span>
+                            </a>
+
+
+                            {% if session.get('user_id') %}
+
+                            <form
+                                method="post"
+                                action="{{ url_for('main.add_to_cart', product_id=p.id) }}"
+                            >
+
+                                <button
+                                    type="submit"
+                                    class="cart-btn"
+                                    {% if p.stock == 0 %}
+                                    disabled
+                                    {% endif %}
+                                >
+                                    🛒
+                                </button>
+
+                            </form>
+
+                            {% else %}
+
+                            <a
+                                href="{{ url_for('main.login') }}"
+                                class="cart-btn login-cart-btn"
+                                title="Login to add to cart"
+                            >
+                                🛒
+                            </a>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+
+            {% else %}
+
+
+            <!-- EMPTY -->
+
+            <div class="col-12">
+
+                <div class="empty-products">
+
+                    <div class="empty-icon">
+                        🔍
+                    </div>
+
+                    <h3>
+                        No products found
+                    </h3>
+
+                    <p>
+                        We couldn't find anything matching your search.
+                    </p>
+
+                    <a
+                        href="{{ url_for('main.home') }}"
+                        class="btn btn-dark px-4"
+                    >
+                        View All Products
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
+

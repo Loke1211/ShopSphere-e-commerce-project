@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Order Confirmed | ShopSphere{% endblock %}
+
+{% block content %}
+
+<section class="confirmation-page">
+
+    <div class="container py-5">
+
+        <!-- SUCCESS -->
+
+        <div class="confirmation-card">
+
+            <div class="confirmation-icon">
+                ✓
+            </div>
+
+            <span class="section-label">
+                ORDER CONFIRMED
+            </span>
+
+            <h1>
+                Thank you for your order!
+            </h1>
+
+            <p class="confirmation-message">
+                Your order has been successfully placed.
+                We'll process it shortly.
+            </p>
+
+
+            <!-- ORDER INFO -->
+
+            <div class="confirmation-order-info">
+
+                <div>
+                    <span>Order Number</span>
+                    <strong>#{{ order.id }}</strong>
+                </div>
+
+                <div>
+                    <span>Order Date</span>
+                    <strong>
+                        {{ order.created_at.strftime("%d %b %Y, %I:%M %p") }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Status</span>
+
+                    <strong class="confirmation-status">
+                        {{ order.status }}
+                    </strong>
+                </div>
+
+            </div>
+
+
+            <!-- ORDER TOTAL -->
+
+            <div class="confirmation-total">
+
+                <span>Order Total</span>
+
+                <strong>
+                    ₹{{ "%.2f"|format(order.total) }}
+                </strong>
+
+            </div>
+
+
+            <!-- DELIVERY INFORMATION -->
+
+            <div class="confirmation-section">
+
+                <div class="section-label">
+                    DELIVERY INFORMATION
+                </div>
+
+                <h3>
+                    Shipping Details
+                </h3>
+
+                <div class="delivery-details">
+
+                    <p>
+                        <strong>{{ order.name }}</strong>
+                    </p>
+
+                    <p>
+                        📞 {{ order.phone }}
+                    </p>
+
+                    <p>
+                        ✉ {{ order.email }}
+                    </p>
+
+                    <p>
+                        {{ order.address }}
+                    </p>
+
+                    <p>
+                        {{ order.city }},
+                        {{ order.state }}
+                        - {{ order.pincode }}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- PAYMENT -->
+
+            <div class="confirmation-section">
+
+                <div class="section-label">
+                    PAYMENT
+                </div>
+
+                <h3>
+                    Payment Method
+                </h3>
+
+                <div class="payment-display">
+
+                    {% if order.payment_method == "cod" %}
+
+                    💵
+                    <span>
+                        Cash on Delivery
+                    </span>
+
+                    {% elif order.payment_method == "upi" %}
+
+                    📱
+                    <span>
+                        UPI
+                    </span>
+
+                    {% elif order.payment_method == "card" %}
+
+                    💳
+                    <span>
+                        Credit / Debit Card
+                    </span>
+
+                    {% else %}
+
+                    <span>
+                        {{ order.payment_method }}
+                    </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- ORDER ITEMS -->
+
+            <div class="confirmation-section">
+
+                <div class="section-label">
+                    YOUR ITEMS
+                </div>
+
+                <h3>
+                    Order Items
+                </h3>
+
+                <div class="confirmation-items">
+
+                    {% for item in order.items %}
+
+                    <div class="confirmation-item">
+
+                        <div>
+
+                            <strong>
+                                {{ item.product_name }}
+                            </strong>
+
+                            <small>
+                                ₹{{ "%.2f"|format(item.price) }}
+                                × {{ item.quantity }}
+                            </small>
+
+                        </div>
+
+                        <strong>
+                            ₹{{ "%.2f"|format(item.price * item.quantity) }}
+                        </strong>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+            <!-- ACTIONS -->
+
+            <div class="confirmation-actions">
+
+                <a
+                    href="{{ url_for('main.home') }}"
+                    class="btn btn-dark"
+                >
+                    Continue Shopping →
+                </a>
+
+                <a
+                    href="{{ url_for('main.cart') }}"
+                    class="btn btn-outline-dark"
+                >
+                    Back to Cart
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

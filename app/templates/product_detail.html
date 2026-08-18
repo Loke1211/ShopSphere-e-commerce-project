@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} | ShopSphere{% endblock %}
+
+{% block content %}
+
+<section class="product-detail-section">
+
+    <div class="container">
+
+        <div class="product-detail-card">
+
+            <div class="row g-0 align-items-stretch">
+
+                <!-- ================= IMAGE ================= -->
+
+                <div class="col-lg-6">
+
+                    <div class="detail-image-wrapper">
+
+                        <img src="{{ product.image_url or 'https://via.placeholder.com/800x600?text=ShopSphere' }}"
+                            alt="{{ product.name }}" class="detail-product-image">
+
+                        <span class="detail-category">
+                            {{ product.category.name }}
+                        </span>
+
+                        {% if product.stock > 0 %}
+
+                        <span class="detail-stock available">
+                            ● In Stock
+                        </span>
+
+                        {% else %}
+
+                        <span class="detail-stock unavailable">
+                            ● Out of Stock
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================= INFORMATION ================= -->
+
+                <div class="col-lg-6">
+
+                    <div class="detail-content">
+
+                        <div class="detail-category-name">
+                            {{ product.category.name }}
+                        </div>
+
+                        <h1 class="detail-title">
+                            {{ product.name }}
+                        </h1>
+
+                        <p class="detail-description">
+                            {{ product.description }}
+                        </p>
+
+
+                        <!-- PRICE -->
+
+                        <div class="detail-price">
+                            ₹{{ "%.2f"|format(product.price) }}
+                        </div>
+
+
+                        <!-- STOCK -->
+
+                        <div class="detail-stock-info">
+
+                            {% if product.stock > 0 %}
+
+                            <span class="stock-dot"></span>
+
+                            <strong>{{ product.stock }}</strong>
+                            items available
+
+                            {% else %}
+
+                            <span class="stock-dot sold-out"></span>
+
+                            <strong>Currently unavailable</strong>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="detail-divider"></div>
+
+
+                        <!-- ACTIONS -->
+
+                        {% if session.get('user_id') %}
+
+                        <div class="detail-actions">
+
+                            <!-- ADD TO CART -->
+
+                            <form method="post" action="{{ url_for('main.add_to_cart', product_id=product.id) }}"
+                                class="detail-cart-form">
+
+                                <button type="submit" class="detail-cart-btn" {% if product.stock==0 %}disabled{% endif
+                                    %}>
+
+                                    🛒
+
+                                    {% if product.stock > 0 %}
+                                    Add to Cart
+                                    {% else %}
+                                    Out of Stock
+                                    {% endif %}
+
+                                </button>
+
+                            </form>
+
+
+                            <!-- WISHLIST -->
+
+                            <form method="post" action="{{ url_for('main.toggle_wishlist', product_id=product.id) }}">
+
+                                <button type="submit" class="detail-wishlist-btn">
+                                    ♡
+                                    <span>Wishlist</span>
+                                </button>
+
+                            </form>
+
+                        </div>
+
+
+                        {% else %}
+
+                        <a href="{{ url_for('main.login') }}" class="detail-login-btn">
+                            Login to Buy
+                        </a>
+
+                        <p class="login-hint">
+                            Login or create an account to add products
+                            to your cart and wishlist.
+                        </p>
+
+                        {% endif %}
+
+
+                        <!-- FEATURES -->
+
+                        <div class="product-features">
+
+                            <div class="feature-item">
+
+                                <span class="feature-icon">
+                                    ✓
+                                </span>
+
+                                <div>
+                                    <strong>Quality Products</strong>
+                                    <small>
+                                        Carefully selected products
+                                    </small>
+                                </div>
+
+                            </div>
+
+
+                            <div class="feature-item">
+
+                                <span class="feature-icon">
+                                    ⚡
+                                </span>
+
+                                <div>
+                                    <strong>Fast Shopping</strong>
+                                    <small>
+                                        Simple and seamless checkout
+                                    </small>
+                                </div>
+
+                            </div>
+
+
+                            <div class="feature-item">
+
+                                <span class="feature-icon">
+                                    🔒
+                                </span>
+
+                                <div>
+                                    <strong>Secure Experience</strong>
+                                    <small>
+                                        Your account stays protected
+                                    </small>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

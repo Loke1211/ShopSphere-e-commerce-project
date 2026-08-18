@@ -1,0 +1,462 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard | ShopSphere{% endblock %}
+
+{% block content %}
+
+<section class="admin-page">
+
+    <div class="container">
+
+        <!-- ================= HEADER ================= -->
+
+        <div class="admin-header">
+
+            <div>
+                <div class="section-label">SHOPSPHERE ADMIN</div>
+
+                <h1>Dashboard</h1>
+
+                <p>
+                    Monitor your store performance and manage operations.
+                </p>
+            </div>
+
+            <div class="admin-actions">
+
+                <a
+                    href="{{ url_for('main.admin_products') }}"
+                    class="admin-action-btn"
+                >
+                    Products
+                </a>
+
+                <a
+                    href="{{ url_for('main.admin_orders') }}"
+                    class="admin-action-btn"
+                >
+                    Orders
+                </a>
+
+                <a
+                    href="{{ url_for('main.admin_users') }}"
+                    class="admin-action-btn"
+                >
+                    Users
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================= STAT CARDS ================= -->
+
+        <div class="row g-4">
+
+            <!-- PRODUCTS -->
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="admin-stat-card">
+
+                    <div class="stat-top">
+
+                        <div class="stat-icon">
+                            🛍️
+                        </div>
+
+                        <span class="stat-label">
+                            PRODUCTS
+                        </span>
+
+                    </div>
+
+                    <h2>
+                        {{ products }}
+                    </h2>
+
+                    <p>
+                        Products in your store
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- USERS -->
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="admin-stat-card">
+
+                    <div class="stat-top">
+
+                        <div class="stat-icon">
+                            👥
+                        </div>
+
+                        <span class="stat-label">
+                            USERS
+                        </span>
+
+                    </div>
+
+                    <h2>
+                        {{ users }}
+                    </h2>
+
+                    <p>
+                        Registered customers
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- ORDERS -->
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="admin-stat-card">
+
+                    <div class="stat-top">
+
+                        <div class="stat-icon">
+                            📦
+                        </div>
+
+                        <span class="stat-label">
+                            ORDERS
+                        </span>
+
+                    </div>
+
+                    <h2>
+                        {{ orders }}
+                    </h2>
+
+                    <p>
+                        Total orders received
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- REVENUE -->
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="admin-stat-card revenue-card">
+
+                    <div class="stat-top">
+
+                        <div class="stat-icon">
+                            ₹
+                        </div>
+
+                        <span class="stat-label">
+                            REVENUE
+                        </span>
+
+                    </div>
+
+                    <h2>
+                        ₹{{ "%.0f"|format(revenue) }}
+                    </h2>
+
+                    <p>
+                        Total order revenue
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================= RECENT ORDERS ================= -->
+
+        <div class="admin-section">
+
+            <div class="admin-section-header">
+
+                <div>
+
+                    <div class="section-label">
+                        ACTIVITY
+                    </div>
+
+                    <h2>
+                        Recent Orders
+                    </h2>
+
+                </div>
+
+                <a
+                    href="{{ url_for('main.admin_orders') }}"
+                    class="view-all-btn"
+                >
+                    View All →
+                </a>
+
+            </div>
+
+
+            <div class="admin-orders-card">
+
+                {% if recent_orders %}
+
+                <div class="table-responsive">
+
+                    <table class="admin-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>ORDER</th>
+
+                                <th>CUSTOMER</th>
+
+                                <th>DATE</th>
+
+                                <th>TOTAL</th>
+
+                                <th>STATUS</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for o in recent_orders %}
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>
+                                        #{{ o.id }}
+                                    </strong>
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="customer-cell">
+
+                                        <div class="customer-avatar">
+                                            {{ o.user.name[:1]|upper }}
+                                        </div>
+
+                                        <span>
+                                            {{ o.user.name }}
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="order-date">
+
+                                        {{ o.created_at.strftime(
+                                            "%d %b %Y"
+                                        ) }}
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <strong>
+                                        ₹{{ "%.2f"|format(o.total) }}
+                                    </strong>
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if o.status|lower == "delivered" %}
+
+                                    <span class="admin-status delivered">
+                                        ● Delivered
+                                    </span>
+
+                                    {% elif o.status|lower == "cancelled" %}
+
+                                    <span class="admin-status cancelled">
+                                        ● Cancelled
+                                    </span>
+
+                                    {% elif o.status|lower == "shipped" %}
+
+                                    <span class="admin-status shipped">
+                                        ● Shipped
+                                    </span>
+
+                                    {% else %}
+
+                                    <span class="admin-status pending">
+                                        ● {{ o.status }}
+                                    </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                {% else %}
+
+                <div class="admin-empty">
+                    No orders available yet.
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- ================= QUICK ACTIONS ================= -->
+
+        <div class="admin-section">
+
+            <div class="section-label">
+                MANAGEMENT
+            </div>
+
+            <h2 class="quick-title">
+                Quick Actions
+            </h2>
+
+
+            <div class="row g-3">
+
+                <div class="col-md-4">
+
+                    <a
+                        href="{{ url_for('main.admin_products') }}"
+                        class="quick-action"
+                    >
+
+                        <span class="quick-icon">
+                            🛍️
+                        </span>
+
+                        <div>
+
+                            <strong>
+                                Manage Products
+                            </strong>
+
+                            <small>
+                                Add or remove products
+                            </small>
+
+                        </div>
+
+                        <span class="quick-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <a
+                        href="{{ url_for('main.admin_orders') }}"
+                        class="quick-action"
+                    >
+
+                        <span class="quick-icon">
+                            📦
+                        </span>
+
+                        <div>
+
+                            <strong>
+                                Manage Orders
+                            </strong>
+
+                            <small>
+                                Update order status
+                            </small>
+
+                        </div>
+
+                        <span class="quick-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <a
+                        href="{{ url_for('main.admin_users') }}"
+                        class="quick-action"
+                    >
+
+                        <span class="quick-icon">
+                            👥
+                        </span>
+
+                        <div>
+
+                            <strong>
+                                Manage Users
+                            </strong>
+
+                            <small>
+                                View registered users
+                            </small>
+
+                        </div>
+
+                        <span class="quick-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

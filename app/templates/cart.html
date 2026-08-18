@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Shopping Cart | ShopSphere{% endblock %}
+
+{% block content %}
+
+<section class="cart-page">
+
+    <div class="container">
+
+        <!-- HEADER -->
+
+        <div class="cart-header">
+
+            <div>
+                <div class="section-label">YOUR SHOPPING BAG</div>
+                <h1>Shopping Cart</h1>
+                <p>Review your items before checkout.</p>
+            </div>
+
+            {% if items %}
+            <div class="cart-count">
+                {{ items|length }} item{% if items|length != 1 %}s{% endif %}
+            </div>
+            {% endif %}
+
+        </div>
+
+
+        {% if items %}
+
+        <div class="row g-4">
+
+            <!-- ================= CART ITEMS ================= -->
+
+            <div class="col-lg-8">
+
+                <div class="cart-items-card">
+
+                    {% for i in items %}
+
+                    <div class="cart-item">
+
+                        <!-- PRODUCT IMAGE -->
+
+                        <div class="cart-product-image">
+
+                            <img src="{{ i.product.image_url or 'https://via.placeholder.com/300x250?text=ShopSphere' }}"
+                                alt="{{ i.product.name }}">
+
+                        </div>
+
+
+                        <!-- PRODUCT DETAILS -->
+
+                        <div class="cart-product-info">
+
+                            <div class="cart-category">
+                                {{ i.product.category.name }}
+                            </div>
+
+                            <h3>
+                                <a href="{{ url_for('main.product_detail', product_id=i.product.id) }}"
+                                    class="cart-product-link">
+                                    {{ i.product.name }}
+                                </a>
+                            </h3>
+
+                            <p>
+                                {{ i.product.description }}
+                            </p>
+
+                            <div class="cart-price">
+                                ₹{{ "%.2f"|format(i.product.price) }}
+                            </div>
+
+                        </div>
+                        {% if i.product.stock > 0 %}
+
+                        <div class="cart-stock-available">
+                            ● {{ i.product.stock }} available
+                        </div>
+
+                        {% else %}
+
+                        <div class="cart-stock-unavailable">
+                            ● Out of stock
+                        </div>
+
+                        {% endif %}
+
+
+                        <!-- QUANTITY -->
+
+                        <div class="cart-quantity">
+
+                            <span>Quantity</span>
+
+                            <form method="post" action="{{ url_for('main.update_cart', item_id=i.id) }}">
+
+                                <div class="quantity-control">
+
+                                    <input type="number" min="1" max="{{ i.product.stock }}" name="quantity"
+                                        value="{{ i.quantity }}">
+
+                                    <button type="submit">
+                                        Update
+                                    </button>
+
+                                </div>
+
+                            </form>
+
+                        </div>
+
+
+                        <!-- TOTAL + REMOVE -->
+
+                        <div class="cart-item-total">
+
+                            <strong>
+                                ₹{{ "%.2f"|format(i.product.price*i.quantity) }}
+                            </strong>
+
+                            <form method="post" action="{{ url_for('main.remove_cart', item_id=i.id) }}">
+
+                                <button type="submit" class="remove-item">
+                                    Remove
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <!-- CONTINUE SHOPPING -->
+
+                <a href="{{ url_for('main.home') }}" class="continue-shopping">
+                    ← Continue Shopping
+                </a>
+
+            </div>
+
+
+            <!-- ================= ORDER SUMMARY ================= -->
+
+            <div class="col-lg-4">
+
+                <div class="order-summary">
+
+                    <div class="summary-label">
+                        ORDER SUMMARY
+                    </div>
+
+                    <h2>Summary</h2>
+
+
+                    <div class="summary-row">
+
+                        <span>Subtotal</span>
+
+                        <strong>
+                            ₹{{ "%.2f"|format(total) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-row">
+
+                        <span>Shipping</span>
+
+                        <span class="free-shipping">
+                            FREE
+                        </span>
+
+                    </div>
+
+
+                    <div class="summary-divider"></div>
+
+
+                    <div class="summary-total">
+
+                        <span>Total</span>
+
+                        <strong>
+                            ₹{{ "%.2f"|format(total) }}
+                        </strong>
+
+                    </div>
+
+
+                    <a href="{{ url_for('main.checkout') }}" class="checkout-btn">
+                        Proceed to Checkout
+                        <span>→</span>
+                    </a>
+
+
+                    <div class="secure-checkout">
+
+                        <span>🔒</span>
+
+                        <div>
+                            <strong>Secure Checkout</strong>
+                            <small>Your shopping experience is protected.</small>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        {% else %}
+
+        <!-- ================= EMPTY CART ================= -->
+
+        <div class="empty-cart">
+
+            <div class="empty-cart-icon">
+                🛒
+            </div>
+
+            <h2>Your cart is empty</h2>
+
+            <p>
+                Looks like you haven't added anything to your cart yet.
+            </p>
+
+            <a href="{{ url_for('main.home') }}" class="empty-cart-btn">
+                Start Shopping
+                <span>→</span>
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+{% endblock %}

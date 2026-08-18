@@ -1,0 +1,429 @@
+{% extends "base.html" %}
+
+{% block title %}Order Management | ShopSphere{% endblock %}
+
+{% block content %}
+
+<section class="admin-page">
+
+    <div class="container">
+
+        <!-- HEADER -->
+
+        <div class="admin-header">
+
+            <div>
+
+                <div class="section-label">
+                    SHOPSPHERE ADMIN
+                </div>
+
+                <h1>
+                    Order Management
+                </h1>
+
+                <p>
+                    Track customer orders and manage delivery status.
+                </p>
+
+            </div>
+
+            <div class="admin-actions">
+
+                <a href="{{ url_for('main.admin_dashboard') }}" class="admin-action-btn">
+                    ← Dashboard
+                </a>
+
+                <a href="{{ url_for('main.admin_products') }}" class="admin-action-btn">
+                    Products
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- SUMMARY -->
+
+        <div class="row g-4 mb-5">
+
+            <div class="col-md-4">
+
+                <div class="admin-stat-card">
+
+                    <div class="stat-top">
+
+                        <div class="stat-icon">
+                            📦
+                        </div>
+
+                        <span class="stat-label">
+                            TOTAL ORDERS
+                        </span>
+
+                    </div>
+
+                    <h2>
+                        {{ orders|length }}
+                    </h2>
+
+                    <p>
+                        Orders received
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <div class="admin-stat-card">
+
+                    <div class="stat-top">
+
+                        <div class="stat-icon">
+                            ⏳
+                        </div>
+
+                        <span class="stat-label">
+                            PENDING
+                        </span>
+
+                    </div>
+
+                    <h2>
+                        {{ orders|selectattr("status", "equalto", "Pending")|list|length }}
+                    </h2>
+
+                    <p>
+                        Orders awaiting processing
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <div class="admin-stat-card">
+
+                    <div class="stat-top">
+
+                        <div class="stat-icon">
+                            ✓
+                        </div>
+
+                        <span class="stat-label">
+                            DELIVERED
+                        </span>
+
+                    </div>
+
+                    <h2>
+                        {{ orders|selectattr("status", "equalto", "Delivered")|list|length }}
+                    </h2>
+
+                    <p>
+                        Successfully delivered
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ORDERS -->
+
+        <div class="admin-section">
+
+            <div class="admin-section-header">
+
+                <div>
+
+                    <div class="section-label">
+                        ORDER ACTIVITY
+                    </div>
+
+                    <h2>
+                        All Orders
+                    </h2>
+
+                </div>
+
+                <span class="text-muted small">
+                    {{ orders|length }} total
+                </span>
+
+            </div>
+
+
+            <div class="admin-orders-card">
+
+                {% if orders %}
+
+                <div class="table-responsive">
+
+                    <table class="admin-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    ORDER
+                                </th>
+
+                                <th>
+                                    CUSTOMER
+                                </th>
+
+                                <th>
+                                    DATE
+                                </th>
+
+                                <th>
+                                    TOTAL
+                                </th>
+
+                                <th>
+                                    STATUS
+                                </th>
+
+                                <th>
+                                    DETAILS
+                                </th>
+
+                                <th>
+                                    UPDATE
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for o in orders %}
+
+                            <tr>
+
+                                <!-- ORDER ID -->
+
+                                <td>
+
+                                    <strong>
+                                        #{{ o.id }}
+                                    </strong>
+
+                                </td>
+
+
+                                <!-- CUSTOMER -->
+
+                                <td>
+
+                                    <div class="customer-cell">
+
+                                        <div class="customer-avatar">
+
+                                            {{ o.user.name[:1]|upper }}
+
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                {{ o.user.name }}
+                                            </strong>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- DATE -->
+
+                                <td>
+
+                                    {% if o.created_at %}
+
+                                    <span class="order-date">
+
+                                        {{ o.created_at.strftime(
+                                        "%d %b %Y"
+                                        ) }}
+
+                                    </span>
+
+                                    {% else %}
+
+                                    <span class="text-muted">
+                                        —
+                                    </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- TOTAL -->
+
+                                <td>
+
+                                    <strong>
+                                        ₹{{ "%.2f"|format(o.total) }}
+                                    </strong>
+
+                                </td>
+
+
+                                <!-- CURRENT STATUS -->
+
+                                <td>
+
+                                    {% if o.status|lower == "delivered" %}
+
+                                    <span class="admin-status delivered">
+                                        ● Delivered
+                                    </span>
+
+                                    {% elif o.status|lower == "cancelled" %}
+
+                                    <span class="admin-status cancelled">
+                                        ● Cancelled
+                                    </span>
+
+                                    {% elif o.status|lower == "shipped" %}
+
+                                    <span class="admin-status shipped">
+                                        ● Shipped
+                                    </span>
+
+                                    {% elif o.status|lower == "confirmed" %}
+
+                                    <span class="admin-status confirmed">
+                                        ● Confirmed
+                                    </span>
+
+                                    {% else %}
+
+                                    <span class="admin-status pending">
+                                        ● {{ o.status }}
+                                    </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <!-- VIEW DETAILS -->
+
+                                <td>
+
+                                    <a href="{{ url_for('main.admin_order_detail', order_id=o.id) }}"
+                                        class="btn btn-outline-dark btn-sm">
+                                        View
+                                    </a>
+
+                                </td>
+
+
+                                <!-- UPDATE STATUS -->
+
+                                <td>
+
+                                    <form class="admin-status-form" method="post" action="{{ url_for(
+                                            'main.admin_update_order',
+                                            order_id=o.id
+                                        ) }}">
+
+                                        <select class="form-select form-select-sm" name="status">
+
+                                            <option value="Pending" {% if o.status=="Pending" %} selected {% endif %}>
+                                                Pending
+                                            </option>
+
+                                            <option value="Confirmed" {% if o.status=="Confirmed" %} selected {% endif
+                                                %}>
+                                                Confirmed
+                                            </option>
+
+                                            <option value="Shipped" {% if o.status=="Shipped" %} selected {% endif %}>
+                                                Shipped
+                                            </option>
+
+                                            <option value="Delivered" {% if o.status=="Delivered" %} selected {% endif
+                                                %}>
+                                                Delivered
+                                            </option>
+
+                                            <option value="Cancelled" {% if o.status=="Cancelled" %} selected {% endif
+                                                %}>
+                                                Cancelled
+                                            </option>
+
+                                        </select>
+
+                                        <button type="submit" class="btn btn-dark btn-sm">
+                                            Update
+                                        </button>
+
+                                    </form>
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                {% else %}
+
+                <div class="admin-empty">
+
+                    <div style="font-size:40px;">
+                        📦
+                    </div>
+
+                    <h5 class="mt-3">
+                        No orders yet
+                    </h5>
+
+                    <p class="text-muted">
+                        Customer orders will appear here.
+                    </p>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+<!-- VIEW ORDER -->
+
+<td>
+
+    <a href="{{ url_for('main.admin_order_detail', order_id=o.id) }}" class="btn btn-outline-dark btn-sm">
+        View
+    </a>
+
+</td>

@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block title %}User Management | ShopSphere{% endblock %}
+
+{% block content %}
+
+<section class="admin-page">
+
+    <div class="container">
+
+        <!-- HEADER -->
+
+        <div class="admin-header">
+
+            <div>
+
+                <div class="section-label">
+                    SHOPSPHERE ADMIN
+                </div>
+
+                <h1>
+                    User Management
+                </h1>
+
+                <p>
+                    View and monitor registered ShopSphere users.
+                </p>
+
+            </div>
+
+            <div class="admin-actions">
+
+                <a
+                    href="{{ url_for('main.admin_dashboard') }}"
+                    class="admin-action-btn"
+                >
+                    ← Dashboard
+                </a>
+
+                <a
+                    href="{{ url_for('main.admin_products') }}"
+                    class="admin-action-btn"
+                >
+                    Products
+                </a>
+
+                <a
+                    href="{{ url_for('main.admin_orders') }}"
+                    class="admin-action-btn"
+                >
+                    Orders
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- SUMMARY -->
+
+        <div class="row g-4 mb-5">
+
+            <div class="col-md-4">
+
+                <div class="admin-stat-card">
+
+                    <div class="stat-top">
+
+                        <div class="stat-icon">
+                            👥
+                        </div>
+
+                        <span class="stat-label">
+                            TOTAL USERS
+                        </span>
+
+                    </div>
+
+                    <h2>
+                        {{ users|length }}
+                    </h2>
+
+                    <p>
+                        Registered accounts
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <div class="admin-stat-card">
+
+                    <div class="stat-top">
+
+                        <div class="stat-icon">
+                            🛡️
+                        </div>
+
+                        <span class="stat-label">
+                            ADMINS
+                        </span>
+
+                    </div>
+
+                    <h2>
+                        {{ users|selectattr("role", "equalto", "admin")|list|length }}
+                    </h2>
+
+                    <p>
+                        Administrator accounts
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <div class="admin-stat-card">
+
+                    <div class="stat-top">
+
+                        <div class="stat-icon">
+                            👤
+                        </div>
+
+                        <span class="stat-label">
+                            CUSTOMERS
+                        </span>
+
+                    </div>
+
+                    <h2>
+                        {{ users|selectattr("role", "equalto", "user")|list|length }}
+                    </h2>
+
+                    <p>
+                        Customer accounts
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- USERS -->
+
+        <div class="admin-section">
+
+            <div class="admin-section-header">
+
+                <div>
+
+                    <div class="section-label">
+                        ACCOUNT DIRECTORY
+                    </div>
+
+                    <h2>
+                        Registered Users
+                    </h2>
+
+                </div>
+
+                <span class="text-muted small">
+                    {{ users|length }} accounts
+                </span>
+
+            </div>
+
+
+            <div class="admin-orders-card">
+
+                {% if users %}
+
+                <div class="table-responsive">
+
+                    <table class="admin-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    USER
+                                </th>
+
+                                <th>
+                                    EMAIL
+                                </th>
+
+                                <th>
+                                    ROLE
+                                </th>
+
+                                <th>
+                                    USER ID
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for user in users %}
+
+                            <tr>
+
+                                <!-- USER -->
+
+                                <td>
+
+                                    <div class="customer-cell">
+
+                                        <div class="customer-avatar">
+
+                                            {{ user.name[:1]|upper }}
+
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                {{ user.name }}
+                                            </strong>
+
+                                            <div class="order-date">
+                                                ShopSphere member
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- EMAIL -->
+
+                                <td>
+
+                                    <span>
+                                        {{ user.email }}
+                                    </span>
+
+                                </td>
+
+
+                                <!-- ROLE -->
+
+                                <td>
+
+                                    {% if user.role == "admin" %}
+
+                                    <span class="user-role admin-role">
+                                        🛡 Admin
+                                    </span>
+
+                                    {% else %}
+
+                                    <span class="user-role customer-role">
+                                        ● Customer
+                                    </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- ID -->
+
+                                <td>
+
+                                    <span class="user-id">
+                                        #{{ user.id }}
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                {% else %}
+
+                <div class="admin-empty">
+
+                    <div style="font-size:40px;">
+                        👥
+                    </div>
+
+                    <h5 class="mt-3">
+                        No users yet
+                    </h5>
+
+                    <p class="text-muted">
+                        Registered users will appear here.
+                    </p>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

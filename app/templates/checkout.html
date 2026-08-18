@@ -1,0 +1,421 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout | ShopSphere{% endblock %}
+
+{% block content %}
+
+<section class="checkout-page">
+
+    <div class="container">
+
+        <!-- HEADER -->
+
+        <div class="checkout-header">
+
+            <div>
+                <div class="section-label">SECURE CHECKOUT</div>
+
+                <h1>Complete your order</h1>
+
+                <p>
+                    Enter your delivery details and review your order.
+                </p>
+            </div>
+
+        </div>
+
+
+        <form method="post">
+
+            <div class="row g-4">
+
+                <!-- ================= CUSTOMER DETAILS ================= -->
+
+                <div class="col-lg-7">
+
+                    <div class="checkout-card">
+
+                        <div class="checkout-card-header">
+
+                            <div class="checkout-step">
+                                01
+                            </div>
+
+                            <div>
+                                <h2>Delivery Information</h2>
+                                <p>Where should we deliver your order?</p>
+                            </div>
+
+                        </div>
+
+
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+
+                                <label class="checkout-label">
+                                    Full Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="name"
+                                    class="checkout-input"
+                                    placeholder="Enter your full name"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label class="checkout-label">
+                                    Phone Number
+                                </label>
+
+                                <input
+                                    type="tel"
+                                    name="phone"
+                                    class="checkout-input"
+                                    placeholder="Enter phone number"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="col-12">
+
+                                <label class="checkout-label">
+                                    Email Address
+                                </label>
+
+                                <input
+                                    type="email"
+                                    name="email"
+                                    class="checkout-input"
+                                    placeholder="Enter your email"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="col-12">
+
+                                <label class="checkout-label">
+                                    Address
+                                </label>
+
+                                <textarea
+                                    name="address"
+                                    class="checkout-input checkout-textarea"
+                                    rows="3"
+                                    placeholder="House / Flat No, Street, Area"
+                                    required
+                                ></textarea>
+
+                            </div>
+
+
+                            <div class="col-md-4">
+
+                                <label class="checkout-label">
+                                    City
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="city"
+                                    class="checkout-input"
+                                    placeholder="City"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="col-md-4">
+
+                                <label class="checkout-label">
+                                    State
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="state"
+                                    class="checkout-input"
+                                    placeholder="State"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="col-md-4">
+
+                                <label class="checkout-label">
+                                    PIN Code
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="pincode"
+                                    class="checkout-input"
+                                    placeholder="PIN"
+                                    maxlength="6"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ================= PAYMENT ================= -->
+
+                    <div class="checkout-card payment-card">
+
+                        <div class="checkout-card-header">
+
+                            <div class="checkout-step">
+                                02
+                            </div>
+
+                            <div>
+                                <h2>Payment Method</h2>
+                                <p>Choose how you want to pay.</p>
+                            </div>
+
+                        </div>
+
+
+                        <label class="payment-option">
+
+                            <input
+                                type="radio"
+                                name="payment_method"
+                                value="cod"
+                                checked
+                            >
+
+                            <div class="payment-option-content">
+
+                                <div class="payment-icon">
+                                    💵
+                                </div>
+
+                                <div>
+                                    <strong>Cash on Delivery</strong>
+
+                                    <small>
+                                        Pay when your order arrives.
+                                    </small>
+                                </div>
+
+                            </div>
+
+                        </label>
+
+
+                        <label class="payment-option">
+
+                            <input
+                                type="radio"
+                                name="payment_method"
+                                value="upi"
+                            >
+
+                            <div class="payment-option-content">
+
+                                <div class="payment-icon">
+                                    📱
+                                </div>
+
+                                <div>
+                                    <strong>UPI</strong>
+
+                                    <small>
+                                        Pay securely using UPI.
+                                    </small>
+                                </div>
+
+                            </div>
+
+                        </label>
+
+
+                        <label class="payment-option">
+
+                            <input
+                                type="radio"
+                                name="payment_method"
+                                value="card"
+                            >
+
+                            <div class="payment-option-content">
+
+                                <div class="payment-icon">
+                                    💳
+                                </div>
+
+                                <div>
+                                    <strong>Credit / Debit Card</strong>
+
+                                    <small>
+                                        Secure card payment.
+                                    </small>
+                                </div>
+
+                            </div>
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================= ORDER SUMMARY ================= -->
+
+                <div class="col-lg-5">
+
+                    <div class="checkout-summary">
+
+                        <div class="summary-label">
+                            YOUR ORDER
+                        </div>
+
+                        <h2>Order Summary</h2>
+
+
+                        {% if items %}
+
+                        <div class="checkout-products">
+
+                            {% for i in items %}
+
+                            <div class="checkout-product">
+
+                                <div class="checkout-product-image">
+
+                                    <img
+                                        src="{{ i.product.image_url or 'https://via.placeholder.com/150x150?text=ShopSphere' }}"
+                                        alt="{{ i.product.name }}"
+                                    >
+
+                                    <span>
+                                        {{ i.quantity }}
+                                    </span>
+
+                                </div>
+
+
+                                <div class="checkout-product-info">
+
+                                    <strong>
+                                        {{ i.product.name }}
+                                    </strong>
+
+                                    <small>
+                                        ₹{{ "%.2f"|format(i.product.price) }}
+                                    </small>
+
+                                </div>
+
+
+                                <strong class="checkout-product-total">
+                                    ₹{{ "%.2f"|format(i.product.price*i.quantity) }}
+                                </strong>
+
+                            </div>
+
+                            {% endfor %}
+
+                        </div>
+
+                        {% endif %}
+
+
+                        <div class="checkout-summary-line">
+
+                            <span>Subtotal</span>
+
+                            <strong>
+                                ₹{{ "%.2f"|format(total) }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="checkout-summary-line">
+
+                            <span>Shipping</span>
+
+                            <strong class="free-shipping">
+                                FREE
+                            </strong>
+
+                        </div>
+
+
+                        <div class="summary-divider"></div>
+
+
+                        <div class="checkout-grand-total">
+
+                            <span>Total</span>
+
+                            <strong>
+                                ₹{{ "%.2f"|format(total) }}
+                            </strong>
+
+                        </div>
+
+
+                        <button
+                            type="submit"
+                            class="place-order-btn"
+                        >
+
+                            <span>Place Order</span>
+
+                            <span>→</span>
+
+                        </button>
+
+
+                        <div class="checkout-security">
+
+                            🔒
+
+                            <span>
+                                Secure and protected checkout
+                            </span>
+
+                        </div>
+
+
+                        <a
+                            href="{{ url_for('main.cart') }}"
+                            class="back-to-cart"
+                        >
+                            ← Return to Cart
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</section>
+
+{% endblock %}

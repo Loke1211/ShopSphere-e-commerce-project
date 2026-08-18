@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block title %}ShopSphere{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- ================= PREMIUM NAVBAR ================= -->
+
+    <nav class="shopsphere-navbar navbar-expand-lg">
+
+        <div class="container navbar-inner">
+
+            <!-- BRAND -->
+
+            <a class="shopsphere-brand" href="{{ url_for('main.home') }}">
+
+                <span class="brand-icon">🛍</span>
+
+                <span>ShopSphere</span>
+
+            </a>
+
+
+            <!-- MOBILE BUTTON -->
+
+            <button class="navbar-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#shopsphereNav"
+                aria-label="Toggle navigation">
+                ☰
+            </button>
+
+
+            <!-- NAVIGATION -->
+
+            <div class="collapse navbar-collapse" id="shopsphereNav">
+
+                <ul class="shopsphere-nav">
+
+                    <!-- PRODUCTS -->
+
+                    <li>
+                        <a href="{{ url_for('main.home') }}"
+                            class="shopsphere-nav-link {% if request.endpoint == 'main.home' %}active{% endif %}">
+                            <span>⌂</span>
+                            Products
+                        </a>
+                    </li>
+
+
+                    {% if session.get('user_id') %}
+
+                    <!-- WISHLIST -->
+
+                    <li>
+                        <a href="{{ url_for('main.wishlist') }}"
+                            class="shopsphere-nav-link {% if request.endpoint == 'main.wishlist' %}active{% endif %}">
+                            <span>♡</span>
+                            Wishlist
+                        </a>
+                    </li>
+
+
+                    <!-- CART -->
+
+                    <li>
+                        <a href="{{ url_for('main.cart') }}"
+                            class="shopsphere-nav-link {% if request.endpoint == 'main.cart' %}active{% endif %}">
+                            <span>🛒</span>
+                            Cart
+                        </a>
+                    </li>
+
+                    <!-- ORDERS -->
+
+                    <li>
+                        <a href="{{ url_for('main.orders') }}"
+                            class="shopsphere-nav-link {% if request.endpoint == 'main.orders' or request.endpoint == 'main.order_detail' %}active{% endif %}">
+                            <span>📦</span>
+                            Orders
+                        </a>
+                    </li>
+
+                    <!-- ADMIN -->
+
+                    {% if session.get('role') == 'admin' %}
+
+                    <li>
+                        <a href="{{ url_for('main.admin_dashboard') }}"
+                            class="shopsphere-nav-link admin-link {% if request.endpoint == 'main.admin_dashboard' %}active{% endif %}">
+                            <span>⚙</span>
+                            Admin
+                        </a>
+                    </li>
+
+                    {% endif %}
+
+
+                    <!-- LOGOUT -->
+
+                    <li class="logout-item">
+
+                        <a href="{{ url_for('main.logout') }}" class="shopsphere-logout">
+                            Logout
+                        </a>
+
+                    </li>
+
+
+                    {% else %}
+
+                    <!-- LOGIN -->
+
+                    <li>
+                        <a href="{{ url_for('main.login') }}" class="shopsphere-nav-link">
+                            Login
+                        </a>
+                    </li>
+
+
+                    <!-- REGISTER -->
+
+                    <li>
+
+                        <a href="{{ url_for('main.register') }}" class="shopsphere-register">
+                            Get Started
+                        </a>
+
+                    </li>
+
+                    {% endif %}
+
+                </ul>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+
+    <!-- ================= BACK BUTTON ================= -->
+
+    {% if request.endpoint != 'main.home' %}
+
+    <div class="container">
+
+        <div class="shopsphere-back-wrapper">
+
+            <button type="button" class="shopsphere-back-btn" onclick="goBack()">
+
+                <span class="back-arrow">←</span>
+
+                <span>Back</span>
+
+            </button>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ================= FLASH MESSAGES ================= -->
+
+    <div class="container flash-container">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% for category, message in messages %}
+
+        <div class="alert alert-{{ category }} alert-dismissible fade show">
+
+            {{ message }}
+
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+
+        </div>
+
+        {% endfor %}
+
+        {% endwith %}
+
+    </div>
+
+
+    <!-- ================= PAGE CONTENT ================= -->
+
+    {% block content %}{% endblock %}
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer class="shopsphere-footer">
+
+        <div class="container">
+
+            <div class="footer-content">
+
+                <div>
+                    <strong>🛍 ShopSphere</strong>
+                    <span>Modern Flask E-Commerce</span>
+                </div>
+
+                <div>
+                    Python Flask • MySQL • Bootstrap
+                </div>
+
+            </div>
+
+            <div class="footer-bottom">
+                © 2026 ShopSphere. All rights reserved.
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <!-- ================= BOOTSTRAP ================= -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+
+    <!-- ================= BACK BUTTON JAVASCRIPT ================= -->
+
+    <script>
+
+        function goBack() {
+
+            if (window.history.length > 1) {
+
+                window.history.back();
+
+            } else {
+
+                window.location.href = "{{ url_for('main.home') }}";
+
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>
