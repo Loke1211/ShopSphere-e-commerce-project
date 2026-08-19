@@ -625,6 +625,79 @@ def admin_edit_product(product_id):
     return redirect(
         url_for("main.admin_products")
     )
+
+# ================= ADMIN ORDERS =================
+
+@main.route("/admin/orders")
+@admin_required
+def admin_orders():
+
+    orders = Order.query.order_by(
+        Order.created_at.desc()
+    ).all()
+
+    return render_template(
+        "admin_orders.html",
+        orders=orders
+    )
+
+
+@main.route("/admin/orders/<int:order_id>")
+@admin_required
+def admin_order_detail(order_id):
+
+    order = Order.query.get_or_404(order_id)
+
+    return render_template(
+        "admin_order_detail.html",
+        order=order
+    )
+
+
+@main.route(
+    "/admin/orders/<int:order_id>/status",
+    methods=["POST"]
+)
+@admin_required
+def admin_update_order(order_id):
+
+    order = Order.query.get_or_404(order_id)
+
+    allowed_statuses = {
+        "Pending",
+        "Confirmed",
+        "Shipped",
+        "Delivered",
+        "Cancelled"
+    }
+
+    status = request.form.get("status")
+
+    if status not in allowed_statuses:
+
+        flash(
+            "Invalid order status.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.admin_orders")
+        )
+
+    order.status = status
+
+    db.session.commit()
+
+    flash(
+        "Order status updated.",
+        "success"
+    )
+
+    return redirect(
+        url_for("main.admin_orders")
+    )
+
+
 @main.route("/admin/users")
 @admin_required
 def admin_users():
