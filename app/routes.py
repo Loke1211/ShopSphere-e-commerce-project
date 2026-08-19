@@ -517,62 +517,114 @@ def admin_delete_product(product_id):
         url_for("main.admin_products")
     )
 
-@main.route("/admin/orders")
+@main.route("/admin/products/edit/<int:product_id>", methods=["POST"])
 @admin_required
-def admin_orders():
-    orders = Order.query.order_by(Order.created_at.desc()).all()
-    return render_template("admin_orders.html", orders=orders)
-@main.route("/admin/orders/<int:order_id>")
-@admin_required
-def admin_order_detail(order_id):
+def admin_edit_product(product_id):
 
-    order = Order.query.get_or_404(order_id)
+    product = Product.query.get_or_404(product_id)
 
-    return render_template(
-        "admin_order_detail.html",
-        order=order
-    )
+    # Update basic product details
+    product.name = request.form.get("name", "").strip()
+    product.description = request.form.get("description", "").strip()
 
-@main.route("/admin/orders/<int:order_id>/status", methods=["POST"])
-@admin_required
-def admin_update_order(order_id):
+    try:
+        product.price = float(
+            request.form.get("price", product.price)
+        )
 
-    order = Order.query.get_or_404(order_id)
+        product.stock = int(
+            request.form.get("stock", product.stock)
+        )
 
-    allowed_statuses = {
-        "Pending",
-        "Confirmed",
-        "Shipped",
-        "Delivered",
-        "Cancelled"
-    }
-
-    status = request.form.get("status")
-
-    if status not in allowed_statuses:
+    except (ValueError, TypeError):
 
         flash(
-            "Invalid order status.",
+            "Invalid price or stock value.",
             "danger"
         )
 
         return redirect(
-            url_for("main.admin_orders")
+            url_for("main.admin_products")
         )
 
-    order.status = status
+    # Update category
+    category_id = request.form.get("category_id")
 
+    if category_id:
+        product.category_id = int(category_id)
+
+    # ================= IMAGE REPLACEMENT =================
+
+    image_file = request.files.get("image")
+
+    if image_file and image_file.filename:
+
+        upload_folder = os.path.join(
+            current_app.static_folder,
+            "uploads"
+        )
+
+        os.makedirs(
+            upload_folder,
+            exist_ok=True
+        )
+
+        # Keep the old image path
+        old_image_url = product.image_url
+
+        # Create a unique filename
+        filename = (
+            f"{uuid.uuid4().hex}_"
+            f"{image_file.filename}"
+        )
+
+        new_image_path = os.path.join(
+            upload_folder,
+            filename
+        )
+
+        # Save new image
+        image_file.save(new_image_path)
+
+        # Update database
+        product.image_url = url_for(
+            "static",
+            filename=f"uploads/{filename}"
+        )
+
+        # Delete old uploaded image
+        if old_image_url and old_image_url.startswith("/static/uploads/"):
+
+            old_filename = old_image_url.replace(
+                "/static/uploads/",
+                "",
+                1
+            )
+
+            old_image_path = os.path.join(
+                upload_folder,
+                old_filename
+            )
+
+            if os.path.exists(old_image_path):
+
+                try:
+                    os.remove(old_image_path)
+
+                except OSError:
+                    pass
+
+    # Save changes
     db.session.commit()
 
     flash(
-        "Order status updated.",
+        "Product updated successfully.",
         "success"
     )
 
     return redirect(
-        url_for("main.admin_orders")
+        url_for("main.admin_products")
     )
-
 @main.route("/admin/users")
 @admin_required
 def admin_users():
