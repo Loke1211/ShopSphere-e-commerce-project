@@ -704,54 +704,73 @@ def admin_users():
     users = User.query.order_by(User.id.desc()).all()
     return render_template("admin_users.html", users=users)
 
+
 @main.cli.command("seed")
 def seed():
-    if not Category.query.first():
-        categories = [Category(name=x) for x in ["Electronics", "Fashion", "Shoes", "Home"]]
-        db.session.add_all(categories)
-        db.session.flush()
-    if not User.query.filter_by(
-    email="admin@shopsphere.com"
-).first():
+    # Create default categories if missing
+    for name in ["Electronics", "Fashion", "Shoes", "Home"]:
+        if not Category.query.filter_by(name=name).first():
+            db.session.add(Category(name=name))
+    db.session.commit()
 
-        admin = User(
-        name="Admin",
-        email="admin@shopsphere.com",
-        role="admin"
-    )
-
-    admin_password = os.getenv(
-        "ADMIN_PASSWORD"
-    )
-
+    # Get the password from Render environment variables
+    admin_password = os.getenv("ADMIN_PASSWORD")
     if not admin_password:
         raise RuntimeError(
-            "ADMIN_PASSWORD is not set in .env"
+            "ADMIN_PASSWORD is not set in Render environment variables"
         )
 
+    # Create the admin or reset the existing admin password
+    admin = User.query.filter_by(
+        email="admin@shopsphere.com"
+    ).first()
+
+    if admin is None:
+        admin = User(
+            name="Admin",
+            email="admin@shopsphere.com",
+            role="admin"
+        )
+        db.session.add(admin)
+
+    admin.role = "admin"
     admin.set_password(admin_password)
+    db.session.commit()
 
-    db.session.add(admin)
-
-    print(
-        "Seed complete. Admin account created."
-    )
+    # Add sample products only if the database has no products
     if Product.query.count() == 0:
         cats = {c.name: c.id for c in Category.query.all()}
         products = [
-            Product(name="Wireless Headphones", description="Comfortable Bluetooth headphones with clear sound.",
-                    price=2499, stock=20, category_id=cats["Electronics"],
-                    image_url="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800"),
-            Product(name="Smart Watch", description="Fitness and notification smartwatch.",
-                    price=3999, stock=15, category_id=cats["Electronics"],
-                    image_url="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800"),
-            Product(name="Classic Sneakers", description="Everyday lightweight sneakers.",
-                    price=2999, stock=25, category_id=cats["Shoes"],
-                    image_url="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800"),
-            Product(name="Minimal Backpack", description="Modern backpack for college and work.",
-                    price=1799, stock=30, category_id=cats["Fashion"],
-                    image_url="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800"),
+            Product(
+                name="Wireless Headphones",
+                description="Comfortable Bluetooth headphones with clear sound.",
+                price=2499, stock=20,
+                category_id=cats["Electronics"],
+                image_url="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800"
+            ),
+            Product(
+                name="Smart Watch",
+                description="Fitness and notification smartwatch.",
+                price=3999, stock=15,
+                category_id=cats["Electronics"],
+                image_url="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800"
+            ),
+            Product(
+                name="Classic Sneakers",
+                description="Everyday lightweight sneakers.",
+                price=2999, stock=25,
+                category_id=cats["Shoes"],
+                image_url="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800"
+            ),
+            Product(
+                name="Minimal Backpack",
+                description="Modern backpack for college and work.",
+                price=1799, stock=30,
+                category_id=cats["Fashion"],
+                image_url="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800"
+            ),
         ]
         db.session.add_all(products)
-    db.session.commit()
-    print("Seed complete. Admin: admin@shopsphere.com / Admin@123")
+        db.session.commit()
+
+    print("Admin account is ready: admin@shopsphere.com")
