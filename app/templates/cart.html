@@ -44,9 +44,9 @@
                         <!-- PRODUCT IMAGE -->
 
                         <div class="cart-product-image">
-
                             <img src="{{ i.product.image_url or 'https://via.placeholder.com/300x250?text=ShopSphere' }}"
-                                alt="{{ i.product.name }}">
+                                alt="{{ i.product.name }}" onclick="openImagePreview(this.src)"
+                                style="cursor: zoom-in;">
 
                         </div>
 
@@ -249,5 +249,37 @@
     </div>
 
 </section>
+
+
+
+<div id="imagePreview" class="image-preview" onclick="closeImagePreview()">
+
+    <button class="image-preview-close" type="button" onclick="closeImagePreview(event)">
+        &times;
+    </button>
+
+    <img id="previewImage" src="" alt="Full product image" onclick="event.stopPropagation()">
+</div>
+
+<script>
+    function openImagePreview(imageSrc) {
+        const popup = document.getElementById("imagePreview");
+        document.getElementById("previewImage").src = imageSrc;
+        popup.classList.add("active");
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeImagePreview(event) {
+        if (event && event.target.id !== "imagePreview") return;
+
+        document.getElementById("imagePreview").classList.remove("active");
+        document.getElementById("previewImage").src = "";
+        document.body.style.overflow = "";
+    }
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") closeImagePreview();
+    });
+</script>
 
 {% endblock %}

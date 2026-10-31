@@ -19,7 +19,8 @@
                     <div class="detail-image-wrapper">
 
                         <img src="{{ product.image_url or 'https://via.placeholder.com/800x600?text=ShopSphere' }}"
-                            alt="{{ product.name }}" class="detail-product-image">
+                            alt="{{ product.name }}" class="detail-product-image" onclick="openImagePreview(this.src)"
+                            style="cursor: zoom-in;">
 
                         <span class="detail-category">
                             {{ product.category.name }}
@@ -214,5 +215,46 @@
     </div>
 
 </section>
+
+
+<!-- FULL IMAGE PREVIEW -->
+<div id="imagePreview" class="image-preview" onclick="closeImagePreview()">
+
+    <button class="image-preview-close" type="button" onclick="closeImagePreview(event)">
+        &times;
+    </button>
+
+    <img id="previewImage" src="" alt="Full product image" onclick="event.stopPropagation()">
+</div>
+
+
+<script>
+    function openImagePreview(imageSrc) {
+        const popup = document.getElementById("imagePreview");
+        const previewImage = document.getElementById("previewImage");
+
+        previewImage.src = imageSrc;
+        popup.classList.add("active");
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeImagePreview(event) {
+        if (event && event.target.id !== "imagePreview") {
+            return;
+        }
+
+        const popup = document.getElementById("imagePreview");
+
+        popup.classList.remove("active");
+        document.getElementById("previewImage").src = "";
+        document.body.style.overflow = "";
+    }
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeImagePreview();
+        }
+    });
+</script>
 
 {% endblock %}
