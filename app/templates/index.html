@@ -37,12 +37,7 @@
                         ⌕
                     </span>
 
-                    <input
-                        type="text"
-                        name="q"
-                        value="{{ q }}"
-                        placeholder="Search products..."
-                    >
+                    <input type="text" name="q" value="{{ q }}" placeholder="Search products...">
 
                 </div>
 
@@ -57,12 +52,7 @@
 
                         {% for c in categories %}
 
-                        <option
-                            value="{{ c.id }}"
-                            {% if category_id == c.id %}
-                            selected
-                            {% endif %}
-                        >
+                        <option value="{{ c.id }}" {% if category_id==c.id %} selected {% endif %}>
                             {{ c.name }}
                         </option>
 
@@ -73,10 +63,7 @@
                 </div>
 
 
-                <button
-                    type="submit"
-                    class="premium-search-btn"
-                >
+                <button type="submit" class="premium-search-btn">
                     Search
                 </button>
 
@@ -122,9 +109,9 @@
                 {{ products|length }}
 
                 {% if products|length == 1 %}
-                    product
+                product
                 {% else %}
-                    products
+                products
                 {% endif %}
 
             </div>
@@ -147,11 +134,9 @@
 
                     <div class="product-image-wrapper">
 
-                        <img
-                            src="{{ p.image_url or 'https://via.placeholder.com/600x450?text=ShopSphere' }}"
-                            alt="{{ p.name }}"
-                            class="premium-product-image"
-                        >
+                        <img src="{{ p.image_url or 'https://via.placeholder.com/600x450?text=ShopSphere' }}"
+                            alt="{{ p.name }}" class="premium-product-image" onclick="openImagePreview(this.src)"
+                            style="cursor: zoom-in;">
 
 
                         <!-- CATEGORY -->
@@ -165,17 +150,10 @@
 
                         {% if session.get('user_id') %}
 
-                        <form
-                            method="post"
-                            action="{{ url_for('main.toggle_wishlist', product_id=p.id) }}"
-                            class="wishlist-form"
-                        >
+                        <form method="post" action="{{ url_for('main.toggle_wishlist', product_id=p.id) }}"
+                            class="wishlist-form">
 
-                            <button
-                                type="submit"
-                                class="wishlist-btn"
-                                title="Add to wishlist"
-                            >
+                            <button type="submit" class="wishlist-btn" title="Add to wishlist">
                                 ♡
                             </button>
 
@@ -251,10 +229,7 @@
                         <div class="product-actions">
 
 
-                            <a
-                                href="{{ url_for('main.product_detail', product_id=p.id) }}"
-                                class="view-product-btn"
-                            >
+                            <a href="{{ url_for('main.product_detail', product_id=p.id) }}" class="view-product-btn">
                                 View Details
                                 <span>→</span>
                             </a>
@@ -262,18 +237,9 @@
 
                             {% if session.get('user_id') %}
 
-                            <form
-                                method="post"
-                                action="{{ url_for('main.add_to_cart', product_id=p.id) }}"
-                            >
+                            <form method="post" action="{{ url_for('main.add_to_cart', product_id=p.id) }}">
 
-                                <button
-                                    type="submit"
-                                    class="cart-btn"
-                                    {% if p.stock == 0 %}
-                                    disabled
-                                    {% endif %}
-                                >
+                                <button type="submit" class="cart-btn" {% if p.stock==0 %} disabled {% endif %}>
                                     🛒
                                 </button>
 
@@ -281,11 +247,8 @@
 
                             {% else %}
 
-                            <a
-                                href="{{ url_for('main.login') }}"
-                                class="cart-btn login-cart-btn"
-                                title="Login to add to cart"
-                            >
+                            <a href="{{ url_for('main.login') }}" class="cart-btn login-cart-btn"
+                                title="Login to add to cart">
                                 🛒
                             </a>
 
@@ -321,10 +284,7 @@
                         We couldn't find anything matching your search.
                     </p>
 
-                    <a
-                        href="{{ url_for('main.home') }}"
-                        class="btn btn-dark px-4"
-                    >
+                    <a href="{{ url_for('main.home') }}" class="btn btn-dark px-4">
                         View All Products
                     </a>
 
@@ -341,5 +301,49 @@
 
 </section>
 
-{% endblock %}
 
+
+<!-- FULL IMAGE PREVIEW POPUP -->
+<div id="imagePreview" class="image-preview" onclick="closeImagePreview()">
+
+    <button class="image-preview-close" type="button" onclick="closeImagePreview(event)">
+        &times;
+    </button>
+
+    <img id="previewImage" src="" alt="Full product image" onclick="event.stopPropagation()">
+
+</div>
+
+
+
+<script>
+    function openImagePreview(imageSrc) {
+        const popup = document.getElementById("imagePreview");
+        const previewImage = document.getElementById("previewImage");
+
+        previewImage.src = imageSrc;
+        popup.classList.add("active");
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeImagePreview(event) {
+        if (event && event.target.id !== "imagePreview") {
+            return;
+        }
+
+        const popup = document.getElementById("imagePreview");
+
+        popup.classList.remove("active");
+        document.getElementById("previewImage").src = "";
+        document.body.style.overflow = "";
+    }
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeImagePreview();
+        }
+    });
+</script>
+
+
+{% endblock %}
