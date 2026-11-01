@@ -545,24 +545,12 @@ def admin_edit_product(product_id):
     product.description = request.form.get("description", "").strip()
 
     try:
-        product.price = float(
-            request.form.get("price", product.price)
-        )
-
-        product.stock = int(
-            request.form.get("stock", product.stock)
-        )
+        product.price = float(request.form.get("price", product.price))
+        product.stock = int(request.form.get("stock", product.stock))
 
     except (ValueError, TypeError):
-
-        flash(
-            "Invalid price or stock value.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("main.admin_products")
-        )
+        flash("Invalid price or stock value.", "danger")
+        return redirect(url_for("main.admin_products"))
 
     # Update category
     category_id = request.form.get("category_id")
@@ -570,8 +558,7 @@ def admin_edit_product(product_id):
     if category_id:
         product.category_id = int(category_id)
 
-    # ================= IMAGE REPLACEMENT =================
-
+    # IMAGE REPLACEMENT
     image_file = request.files.get("image")
 
     if image_file and image_file.filename:
@@ -581,28 +568,24 @@ def admin_edit_product(product_id):
         filename = secure_filename(image_file.filename)
         extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
 
-    if extension not in allowed_extensions:
-        flash("Invalid image format.", "danger")
-        return redirect(url_for("main.admin_products"))
+        if extension not in allowed_extensions:
+            flash("Invalid image format.", "danger")
+            return redirect(url_for("main.admin_products"))
 
-    upload_result = cloudinary.uploader.upload(
-        image_file,
-        folder="shopsphere/products"
-    )
+        upload_result = cloudinary.uploader.upload(
+            image_file,
+            folder="shopsphere/products"
+        )
 
-    product.image_url = upload_result["secure_url"]
+        product.image_url = upload_result["secure_url"]
 
     # Save changes
     db.session.commit()
 
-    flash(
-        "Product updated successfully.",
-        "success"
-    )
+    flash("Product updated successfully.", "success")
 
-    return redirect(
-        url_for("main.admin_products")
-    )
+    return redirect(url_for("main.admin_products"))
+
 
 # ================= ADMIN ORDERS =================
 
