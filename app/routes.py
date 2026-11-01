@@ -1,5 +1,7 @@
 from functools import wraps
 import os
+import cloudinary
+import cloudinary.uploader
 import uuid
 from flask import ( Blueprint, render_template, request, redirect, url_for, session, flash, current_app )
 from werkzeug.utils import secure_filename
@@ -8,6 +10,14 @@ from app import db
 from app.models import User, Category, Product, CartItem, WishlistItem, Order, OrderItem
 
 main = Blueprint("main", __name__)
+
+
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True
+)
 
 def login_required(view):
     @wraps(view)
@@ -424,46 +434,27 @@ def admin_add_product():
     image_file = request.files.get("image_file")
 
     # ================= IMAGE UPLOAD =================
-
     if image_file and image_file.filename:
 
-        allowed_extensions = {
-            "png", "jpg", "jpeg", "gif", "webp"
-        }
 
-        filename = secure_filename(image_file.filename)
+     allowed_extensions = {"png", "jpg", "jpeg", "gif", "webp"}
 
-        extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+     filename = secure_filename(image_file.filename)
+     extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
 
-        if extension not in allowed_extensions:
-            flash(
-                "Invalid image format. Use PNG, JPG, JPEG, GIF or WEBP.",
-                "danger"
-            )
-            return redirect(url_for("main.admin_products"))
-
-        # Create upload folder
-        upload_folder = os.path.join(
-            current_app.static_folder,
-            "uploads"
+    if extension not in allowed_extensions:
+        flash(
+            "Invalid image format. Use PNG, JPG, JPEG, GIF or WEBP.",
+            "danger"
         )
+        return redirect(url_for("main.admin_products"))
 
-        os.makedirs(upload_folder, exist_ok=True)
+    upload_result = cloudinary.uploader.upload(
+        image_file,
+        folder="shopsphere/products"
+    )
 
-        # Avoid duplicate filenames
-
-        filename = f"{uuid.uuid4().hex}_{filename}"
-
-        image_file.save(
-            os.path.join(upload_folder, filename)
-        )
-
-        # Store path in database
-        image_url = url_for(
-            "static",
-            filename=f"uploads/{filename}"
-        )
-
+    image_url = upload_result["secure_url"]
     # =================================================
 
     product = Product(
