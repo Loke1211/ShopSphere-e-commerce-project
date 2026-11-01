@@ -153,8 +153,14 @@
                         <form method="post" action="{{ url_for('main.toggle_wishlist', product_id=p.id) }}"
                             class="wishlist-form">
 
-                            <button type="submit" class="wishlist-btn" title="Add to wishlist">
+                            <button type="submit"
+                                class="wishlist-btn {% if p.id in wishlist_product_ids %}active{% endif %}"
+                                title="Toggle wishlist">
+                                {% if p.id in wishlist_product_ids %}
+                                ♥
+                                {% else %}
                                 ♡
+                                {% endif %}
                             </button>
 
                         </form>

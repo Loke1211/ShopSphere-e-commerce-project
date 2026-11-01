@@ -1,4 +1,5 @@
 from functools import wraps
+from itertools import product
 import os
 import cloudinary
 import cloudinary.uploader
@@ -36,21 +37,46 @@ def admin_required(view):
             return redirect(url_for("main.home"))
         return view(*args, **kwargs)
     return wrapped
-
 @main.route("/")
 def home():
     q = request.args.get("q", "").strip()
     category_id = request.args.get("category", type=int)
+
     query = Product.query
+
     if q:
-        query = query.filter(or_(Product.name.ilike(f"%{q}%"),
-                                 Product.description.ilike(f"%{q}%")))
+        query = query.filter(
+            or_(
+                Product.name.ilike(f"%{q}%"),
+                Product.description.ilike(f"%{q}%")
+            )
+        )
+
     if category_id:
         query = query.filter_by(category_id=category_id)
+
     products = query.order_by(Product.created_at.desc()).all()
     categories = Category.query.order_by(Category.name).all()
-    return render_template("index.html", products=products, categories=categories, q=q, category_id=category_id)
 
+    wishlist_product_ids = set()
+
+    if session.get("user_id"):
+        wishlist_items = WishlistItem.query.filter_by(
+            user_id=session["user_id"]
+        ).all()
+
+        wishlist_product_ids = {
+            item.product_id for item in wishlist_items
+        }
+
+    return render_template(
+        "index.html",
+        products=products,
+        categories=categories,
+        q=q,
+        category_id=category_id,
+        wishlist_product_ids=wishlist_product_ids
+    )
 @main.route("/product/<int:product_id>")
 def product_detail(product_id):
     product = Product.query.get_or_404(product_id)
@@ -550,60 +576,21 @@ def admin_edit_product(product_id):
 
     if image_file and image_file.filename:
 
-        upload_folder = os.path.join(
-            current_app.static_folder,
-            "uploads"
-        )
+        allowed_extensions = {"png", "jpg", "jpeg", "gif", "webp"}
 
-        os.makedirs(
-            upload_folder,
-            exist_ok=True
-        )
+        filename = secure_filename(image_file.filename)
+        extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
 
-        # Keep the old image path
-        old_image_url = product.image_url
+    if extension not in allowed_extensions:
+        flash("Invalid image format.", "danger")
+        return redirect(url_for("main.admin_products"))
 
-        # Create a unique filename
-        filename = (
-            f"{uuid.uuid4().hex}_"
-            f"{image_file.filename}"
-        )
+    upload_result = cloudinary.uploader.upload(
+        image_file,
+        folder="shopsphere/products"
+    )
 
-        new_image_path = os.path.join(
-            upload_folder,
-            filename
-        )
-
-        # Save new image
-        image_file.save(new_image_path)
-
-        # Update database
-        product.image_url = url_for(
-            "static",
-            filename=f"uploads/{filename}"
-        )
-
-        # Delete old uploaded image
-        if old_image_url and old_image_url.startswith("/static/uploads/"):
-
-            old_filename = old_image_url.replace(
-                "/static/uploads/",
-                "",
-                1
-            )
-
-            old_image_path = os.path.join(
-                upload_folder,
-                old_filename
-            )
-
-            if os.path.exists(old_image_path):
-
-                try:
-                    os.remove(old_image_path)
-
-                except OSError:
-                    pass
+    product.image_url = upload_result["secure_url"]
 
     # Save changes
     db.session.commit()
