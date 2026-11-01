@@ -4715,3 +4715,12 @@ footer {
     font-size: 26px;
     transition: color 0.2s ease;
 }
+
+
+@media (max-width: 576px) {
+    .wishlist-form {
+        top: 12px;
+        right: 12px;
+        font-size: 16px !important;
+    }
+}
