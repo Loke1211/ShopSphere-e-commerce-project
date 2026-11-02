@@ -442,9 +442,25 @@ def admin_dashboard():
 @main.route("/admin/products")
 @admin_required
 def admin_products():
+
     products = Product.query.order_by(Product.id.desc()).all()
-    categories = Category.query.order_by(Category.name).all()
-    return render_template("admin_products.html", products=products, categories=categories)
+
+    # Get only main categories
+    categories = Category.query.filter_by(
+        parent_id=None
+    ).order_by(Category.name).all()
+
+    # Get all subcategories
+    subcategories = Category.query.filter(
+        Category.parent_id.isnot(None)
+    ).order_by(Category.name).all()
+
+    return render_template(
+        "admin_products.html",
+        products=products,
+        categories=categories,
+        subcategories=subcategories
+    )
 
 @main.route("/admin/products/add", methods=["POST"])
 @admin_required
@@ -459,30 +475,29 @@ def admin_add_product():
     image_url = request.form.get("image_url", "").strip()
     image_file = request.files.get("image_file")
 
-    # ================= IMAGE UPLOAD =================
+    # IMAGE UPLOAD
     if image_file and image_file.filename:
 
+        allowed_extensions = {"png", "jpg", "jpeg", "gif", "webp"}
 
-     allowed_extensions = {"png", "jpg", "jpeg", "gif", "webp"}
+        filename = secure_filename(image_file.filename)
+        extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
 
-     filename = secure_filename(image_file.filename)
-     extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+        if extension not in allowed_extensions:
+            flash(
+                "Invalid image format. Use PNG, JPG, JPEG, GIF or WEBP.",
+                "danger"
+            )
+            return redirect(url_for("main.admin_products"))
 
-    if extension not in allowed_extensions:
-        flash(
-            "Invalid image format. Use PNG, JPG, JPEG, GIF or WEBP.",
-            "danger"
+        upload_result = cloudinary.uploader.upload(
+            image_file,
+            folder="shopsphere/products"
         )
-        return redirect(url_for("main.admin_products"))
 
-    upload_result = cloudinary.uploader.upload(
-        image_file,
-        folder="shopsphere/products"
-    )
+        image_url = upload_result["secure_url"]
 
-    image_url = upload_result["secure_url"]
-    # =================================================
-
+    # CREATE PRODUCT
     product = Product(
         name=name,
         description=description,
@@ -498,6 +513,7 @@ def admin_add_product():
     flash("Product added successfully.", "success")
 
     return redirect(url_for("main.admin_products"))
+
 
 @main.route("/admin/products/delete/<int:product_id>", methods=["POST"])
 @admin_required

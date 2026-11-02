@@ -5,13 +5,15 @@ from flask_sqlalchemy import SQLAlchemy
 from config import Config
 
 db = SQLAlchemy()
-
+from flask_migrate import Migrate
+migrate = Migrate()
 
 def create_app():
     load_dotenv()
     app = Flask(__name__)
     app.config.from_object(Config)
     db.init_app(app)
+    migrate.init_app(app, db)
 
     from app.routes import main
     app.register_blueprint(main)
@@ -23,7 +25,25 @@ def create_app():
         if os.getenv("AUTO_SEED") == "true":
             from app.models import Category, Product, User
 
-            categories = ["Electronics", "Fashion", "Shoes", "Home"]
+            categories = [
+    "Electronics",
+    "Fashion",
+    "Shoes",
+    "Home & Kitchen",
+    "Beauty & Personal Care",
+    "Books & Stationery",
+    "Sports & Fitness",
+    "Accessories",
+    "Toys & Baby Products",
+    "Grocery & Essentials",
+    "Mobiles & Accessories",
+    "Gaming & Entertainment",
+    "Pet Supplies",
+    "Watches",
+    "Luggage & Travel",
+    "Automotive Accessories",
+    "Jewellery"
+]
 
             for category_name in categories:
                 if not Category.query.filter_by(name=category_name).first():

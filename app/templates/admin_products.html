@@ -67,26 +67,36 @@
 
                     <!-- Category -->
 
+
                     <div class="col-md-6">
 
                         <label class="form-label fw-semibold">
-                            Category
+                            Main Category
                         </label>
 
-                        <select class="form-select form-select-lg" name="category_id" required>
-
-                            <option value="">
-                                Select category
-                            </option>
+                        <select id="main_category" class="form-select form-select-lg" required>
+                            <option value="">Select category</option>
 
                             {% for c in categories %}
-
-                            <option value="{{ c.id }}">
+                            <option value="{{ c.id }}" data-name="{{ c.name }}">
                                 {{ c.name }}
                             </option>
-
                             {% endfor %}
+                        </select>
 
+                        <label class="form-label fw-semibold mt-3">
+                            Subcategory
+                        </label>
+
+                        <select id="subcategory" name="category_id" class="form-select form-select-lg" required
+                            disabled>
+                            <option value="">Select subcategory</option>
+
+                            {% for sub in subcategories %}
+                            <option value="{{ sub.id }}" data-parent="{{ sub.parent_id }}">
+                                {{ sub.name }}
+                            </option>
+                            {% endfor %}
                         </select>
 
                     </div>
@@ -449,28 +459,46 @@
 
                                             <!-- CATEGORY -->
 
+
                                             <div class="col-md-6">
 
                                                 <label class="form-label">
-                                                    Category
+                                                    Main Category
                                                 </label>
 
-                                                <select name="category_id" class="form-select" required>
+                                                <select class="form-select edit-main-category"
+                                                    data-selected-main="{{ p.category.parent_id if p.category and p.category.parent_id else p.category_id }}"
+                                                    data-selected-sub="{{ p.category_id if p.category and p.category.parent_id else '' }}"
+                                                    required>
 
                                                     {% for c in categories %}
-
-                                                    <option value="{{ c.id }}" {% if p.category_id==c.id %} selected {%
-                                                        endif %}>
-
+                                                    <option value="{{ c.id }}" {% if c.id==(p.category.parent_id if
+                                                        p.category and p.category.parent_id else p.category_id)
+                                                        %}selected{% endif %}>
                                                         {{ c.name }}
-
                                                     </option>
+                                                    {% endfor %}
 
+                                                </select>
+
+                                                <label class="form-label mt-3">
+                                                    Subcategory
+                                                </label>
+
+                                                <select name="category_id" class="form-select edit-subcategory"
+                                                    required>
+                                                    <option value="">Select subcategory</option>
+
+                                                    {% for sub in subcategories %}
+                                                    <option value="{{ sub.id }}" data-parent="{{ sub.parent_id }}">
+                                                        {{ sub.name }}
+                                                    </option>
                                                     {% endfor %}
 
                                                 </select>
 
                                             </div>
+
 
 
                                             <!-- NEW IMAGE -->
@@ -552,5 +580,98 @@
     </div>
 
 </div>
+
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        function setupCategoryDropdown(mainSelect, subSelect, selectedSub = "") {
+
+            const allOptions = Array.from(
+                subSelect.querySelectorAll("option[data-parent]")
+            );
+
+            function updateSubcategories() {
+
+                const selectedMain = mainSelect.value;
+
+                subSelect.innerHTML =
+                    '<option value="">Select subcategory</option>';
+
+                const matching = allOptions.filter(
+                    option => option.dataset.parent === selectedMain
+                );
+
+                if (matching.length > 0) {
+                    matching.forEach(option => {
+                        const clone = option.cloneNode(true);
+
+                        if (clone.value === selectedSub) {
+                            clone.selected = true;
+                        }
+
+                        subSelect.add(clone);
+                    });
+
+                    subSelect.disabled = false;
+
+                } else {
+                    const selectedOption =
+                        mainSelect.options[mainSelect.selectedIndex];
+
+                    if (selectedOption && selectedMain) {
+                        const option = document.createElement("option");
+                        option.value = selectedMain;
+                        option.textContent =
+                            selectedOption.dataset.name ||
+                            selectedOption.textContent.trim();
+
+                        subSelect.add(option);
+                        subSelect.value = selectedMain;
+                    }
+
+                    subSelect.disabled = !selectedMain;
+                }
+            }
+
+            mainSelect.addEventListener("change", function () {
+                selectedSub = "";
+                updateSubcategories();
+            });
+
+            updateSubcategories();
+        }
+
+        // ADD PRODUCT
+        const addMain = document.getElementById("main_category");
+        const addSub = document.getElementById("subcategory");
+
+        if (addMain && addSub) {
+            setupCategoryDropdown(addMain, addSub);
+        }
+
+        // EDIT PRODUCT
+        document.querySelectorAll(".edit-main-category").forEach(main => {
+
+            const container = main.closest(".col-md-6");
+            const sub = container.querySelector(".edit-subcategory");
+
+            if (!sub) return;
+
+            const selectedMain = main.dataset.selectedMain;
+            const selectedSub = main.dataset.selectedSub;
+
+            main.value = selectedMain;
+
+            setupCategoryDropdown(main, sub, selectedSub);
+        });
+
+    });
+</script>
+
+
+
 
 {% endblock %}

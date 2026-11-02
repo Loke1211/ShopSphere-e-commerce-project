@@ -21,7 +21,24 @@ class User(db.Model):
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
-    products = db.relationship("Product", backref="category", lazy=True)
+
+    parent_id = db.Column(
+        db.Integer,
+        db.ForeignKey("category.id"),
+        nullable=True
+    )
+
+    products = db.relationship(
+        "Product",
+        backref="category",
+        lazy=True
+    )
+
+    subcategories = db.relationship(
+        "Category",
+        backref=db.backref("parent", remote_side=[id]),
+        lazy=True
+    )
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
