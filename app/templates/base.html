@@ -79,6 +79,16 @@
                         </a>
                     </li>
 
+                    <!-- MY ADDRESSES -->
+
+                    <li>
+                        <a href="{{ url_for('main.my_addresses') }}"
+                            class="shopsphere-nav-link {% if request.endpoint in ['main.my_addresses', 'main.add_address', 'main.edit_address'] %}active{% endif %}">
+                            <span>📍</span>
+                            My Addresses
+                        </a>
+                    </li>
+
                     <!-- ORDERS -->
 
                     <li>

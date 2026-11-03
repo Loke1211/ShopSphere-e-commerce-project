@@ -12,6 +12,13 @@ class User(db.Model):
 
     orders = db.relationship("Order", backref="user", lazy=True)
 
+    addresses = db.relationship(
+    "Address",
+    backref="user",
+    lazy=True,
+    cascade="all, delete-orphan"
+)
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
@@ -172,4 +179,37 @@ class OrderItem(db.Model):
     product = db.relationship(
         "Product",
         backref="order_items"
+    )
+
+
+    
+class Address(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id"),
+        nullable=False
+    )
+
+    name = db.Column(db.String(100), nullable=False)
+
+    phone = db.Column(db.String(20), nullable=False)
+
+    email = db.Column(db.String(120), nullable=False)
+
+    address = db.Column(db.Text, nullable=False)
+
+    city = db.Column(db.String(100), nullable=False)
+
+    state = db.Column(db.String(100), nullable=False)
+
+    pincode = db.Column(db.String(10), nullable=False)
+
+    is_default = db.Column(db.Boolean, default=False)
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
     )

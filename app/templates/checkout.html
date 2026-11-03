@@ -47,7 +47,36 @@
                             </div>
 
                         </div>
+                        {% if saved_addresses %}
 
+                        <div class="col-12 mb-4">
+
+                            <label class="checkout-label">
+                                Choose a Saved Address
+                            </label>
+
+                            <select id="saved_address" name="saved_address_id" class="checkout-input">
+
+                                <option value="">+ Enter a New Address</option>
+
+                                {% for a in saved_addresses %}
+
+                                <option value="{{ a.id }}" data-name="{{ a.name }}" data-phone="{{ a.phone }}"
+                                    data-email="{{ a.email }}" data-address="{{ a.address }}" data-city="{{ a.city }}"
+                                    data-state="{{ a.state }}" data-pincode="{{ a.pincode }}">
+
+                                    {{ a.name }} - {{ a.city }} ({{ a.pincode }})
+                                    {% if a.is_default %} - Default{% endif %}
+
+                                </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+                        {% endif %}
 
                         <div class="row g-3">
 
@@ -57,14 +86,8 @@
                                     Full Name
                                 </label>
 
-                                <input
-                                    type="text"
-                                    name="name"
-                                    class="checkout-input"
-                                    placeholder="Enter your full name"
-                                    required
-                                >
-
+                                <input type="text" id="delivery_name" name="name" class="checkout-input"
+                                    placeholder="Enter your full name" required>
                             </div>
 
 
@@ -74,13 +97,8 @@
                                     Phone Number
                                 </label>
 
-                                <input
-                                    type="tel"
-                                    name="phone"
-                                    class="checkout-input"
-                                    placeholder="Enter phone number"
-                                    required
-                                >
+                                <input type="tel" name="phone" class="checkout-input" placeholder="Enter phone number"
+                                    required>
 
                             </div>
 
@@ -91,13 +109,8 @@
                                     Email Address
                                 </label>
 
-                                <input
-                                    type="email"
-                                    name="email"
-                                    class="checkout-input"
-                                    placeholder="Enter your email"
-                                    required
-                                >
+                                <input type="email" name="email" class="checkout-input" placeholder="Enter your email"
+                                    required>
 
                             </div>
 
@@ -108,13 +121,8 @@
                                     Address
                                 </label>
 
-                                <textarea
-                                    name="address"
-                                    class="checkout-input checkout-textarea"
-                                    rows="3"
-                                    placeholder="House / Flat No, Street, Area"
-                                    required
-                                ></textarea>
+                                <textarea name="address" class="checkout-input checkout-textarea" rows="3"
+                                    placeholder="House / Flat No, Street, Area" required></textarea>
 
                             </div>
 
@@ -125,13 +133,7 @@
                                     City
                                 </label>
 
-                                <input
-                                    type="text"
-                                    name="city"
-                                    class="checkout-input"
-                                    placeholder="City"
-                                    required
-                                >
+                                <input type="text" name="city" class="checkout-input" placeholder="City" required>
 
                             </div>
 
@@ -142,13 +144,7 @@
                                     State
                                 </label>
 
-                                <input
-                                    type="text"
-                                    name="state"
-                                    class="checkout-input"
-                                    placeholder="State"
-                                    required
-                                >
+                                <input type="text" name="state" class="checkout-input" placeholder="State" required>
 
                             </div>
 
@@ -159,14 +155,8 @@
                                     PIN Code
                                 </label>
 
-                                <input
-                                    type="text"
-                                    name="pincode"
-                                    class="checkout-input"
-                                    placeholder="PIN"
-                                    maxlength="6"
-                                    required
-                                >
+                                <input type="text" name="pincode" class="checkout-input" placeholder="PIN" maxlength="6"
+                                    required>
 
                             </div>
 
@@ -195,12 +185,7 @@
 
                         <label class="payment-option">
 
-                            <input
-                                type="radio"
-                                name="payment_method"
-                                value="cod"
-                                checked
-                            >
+                            <input type="radio" name="payment_method" value="cod" checked>
 
                             <div class="payment-option-content">
 
@@ -223,11 +208,7 @@
 
                         <label class="payment-option">
 
-                            <input
-                                type="radio"
-                                name="payment_method"
-                                value="upi"
-                            >
+                            <input type="radio" name="payment_method" value="upi">
 
                             <div class="payment-option-content">
 
@@ -250,11 +231,7 @@
 
                         <label class="payment-option">
 
-                            <input
-                                type="radio"
-                                name="payment_method"
-                                value="card"
-                            >
+                            <input type="radio" name="payment_method" value="card">
 
                             <div class="payment-option-content">
 
@@ -302,10 +279,8 @@
 
                                 <div class="checkout-product-image">
 
-                                    <img
-                                        src="{{ i.product.image_url or 'https://via.placeholder.com/150x150?text=ShopSphere' }}"
-                                        alt="{{ i.product.name }}"
-                                    >
+                                    <img src="{{ i.product.image_url or 'https://via.placeholder.com/150x150?text=ShopSphere' }}"
+                                        alt="{{ i.product.name }}">
 
                                     <span>
                                         {{ i.quantity }}
@@ -376,10 +351,7 @@
                         </div>
 
 
-                        <button
-                            type="submit"
-                            class="place-order-btn"
-                        >
+                        <button type="submit" class="place-order-btn">
 
                             <span>Place Order</span>
 
@@ -399,10 +371,7 @@
                         </div>
 
 
-                        <a
-                            href="{{ url_for('main.cart') }}"
-                            class="back-to-cart"
-                        >
+                        <a href="{{ url_for('main.cart') }}" class="back-to-cart">
                             ← Return to Cart
                         </a>
 
@@ -417,5 +386,47 @@
     </div>
 
 </section>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const savedAddress = document.getElementById("saved_address");
+
+        if (!savedAddress) return;
+
+        savedAddress.addEventListener("change", function () {
+
+            const option = this.options[this.selectedIndex];
+
+            const fields = {
+                name: "name",
+                phone: "phone",
+                email: "email",
+                address: "address",
+                city: "city",
+                state: "state",
+                pincode: "pincode"
+            };
+
+            Object.entries(fields).forEach(([fieldName, dataKey]) => {
+
+                const input = document.querySelector(
+                    `[name="${fieldName}"]`
+                );
+
+                if (input) {
+                    input.value = this.value
+                        ? option.getAttribute(`data-${dataKey}`) || ""
+                        : "";
+                }
+
+            });
+
+        });
+
+    });
+</script>
+
 
 {% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-5" style="max-width: 750px;">
+
+    <h2 class="fw-bold mb-4">
+        {{ "Edit Address" if address else "Add New Address" }}
+    </h2>
+
+    <form method="POST">
+
+        <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input type="text" name="name" class="form-control" value="{{ address.name if address else '' }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" name="phone" class="form-control" value="{{ address.phone if address else '' }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" value="{{ address.email if address else '' }}"
+                required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">House / Street / Area</label>
+            <textarea name="address" class="form-control" rows="3"
+                required>{{ address.address if address else '' }}</textarea>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">City</label>
+                <input type="text" name="city" class="form-control" value="{{ address.city if address else '' }}"
+                    required>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">State</label>
+                <input type="text" name="state" class="form-control" value="{{ address.state if address else '' }}"
+                    required>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">PIN Code</label>
+            <input type="text" name="pincode" maxlength="10" class="form-control"
+                value="{{ address.pincode if address else '' }}" required>
+        </div>
+
+        <div class="form-check mb-4">
+            <input type="checkbox" name="is_default" class="form-check-input" id="is_default" {% if address and
+                address.is_default %}checked{% endif %}>
+            <label class="form-check-label" for="is_default">
+                Set as default delivery address
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Save Address
+        </button>
+
+        <a href="{{ url_for('main.my_addresses') }}" class="btn btn-outline-secondary">
+            Cancel
+        </a>
+
+    </form>
+
+</div>
+
+{% endblock %}

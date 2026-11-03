@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">My Addresses</h2>
+            <p class="text-muted">Manage your saved delivery addresses.</p>
+        </div>
+
+        <a href="{{ url_for('main.add_address') }}" class="btn btn-primary">
+            + Add New Address
+        </a>
+    </div>
+
+    {% if addresses %}
+
+    <div class="row g-4">
+
+        {% for a in addresses %}
+
+        <div class="col-md-6 col-lg-4">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between mb-3">
+
+                        <h5 class="fw-bold">{{ a.name }}</h5>
+
+                        {% if a.is_default %}
+                        <span class="badge bg-success">Default</span>
+                        {% endif %}
+
+                    </div>
+
+                    <p class="mb-1">{{ a.phone }}</p>
+                    <p class="mb-1">{{ a.email }}</p>
+                    <p class="mb-1">{{ a.address }}</p>
+                    <p class="mb-1">{{ a.city }}, {{ a.state }}</p>
+                    <p class="mb-3">PIN: {{ a.pincode }}</p>
+
+                    <div class="d-flex gap-2">
+
+                        <a href="{{ url_for('main.edit_address', address_id=a.id) }}"
+                            class="btn btn-outline-primary btn-sm">
+                            Edit
+                        </a>
+
+                        <form method="POST" action="{{ url_for('main.delete_address', address_id=a.id) }}"
+                            onsubmit="return confirm('Delete this address?');">
+
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                Delete
+                            </button>
+
+                        </form>
+
+                        {% if not a.is_default %}
+
+                        <form method="POST" action="{{ url_for('main.set_default_address', address_id=a.id) }}">
+
+                            <button type="submit" class="btn btn-outline-success btn-sm">
+                                Set Default
+                            </button>
+
+                        </form>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="text-center py-5">
+
+        <h4>No saved addresses yet.</h4>
+
+        <p class="text-muted">
+            Add your first delivery address.
+        </p>
+
+        <a href="{{ url_for('main.add_address') }}" class="btn btn-primary">
+            Add Address
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

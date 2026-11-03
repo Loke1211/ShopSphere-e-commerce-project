@@ -8,7 +8,7 @@ from flask import ( Blueprint, render_template, request, redirect, url_for, sess
 from werkzeug.utils import secure_filename
 from sqlalchemy import or_
 from app import db
-from app.models import User, Category, Product, CartItem, WishlistItem, Order, OrderItem
+from app.models import User, Category, Product, CartItem, WishlistItem, Order, OrderItem, Address
 
 main = Blueprint("main", __name__)
 
@@ -206,6 +206,158 @@ def wishlist():
     items = WishlistItem.query.filter_by(user_id=session["user_id"]).all()
     return render_template("wishlist.html", items=items)
 
+@main.route("/my-addresses")
+@login_required
+def my_addresses():
+
+    addresses = Address.query.filter_by(
+        user_id=session["user_id"]
+    ).order_by(
+        Address.is_default.desc(),
+        Address.created_at.desc()
+    ).all()
+
+    return render_template(
+        "my_addresses.html",
+        addresses=addresses
+    )
+
+@main.route("/my-addresses/add", methods=["GET", "POST"])
+@login_required
+def add_address():
+
+    if request.method == "POST":
+
+        name = request.form.get("name", "").strip()
+        phone = request.form.get("phone", "").strip()
+        email = request.form.get("email", "").strip()
+        address = request.form.get("address", "").strip()
+        city = request.form.get("city", "").strip()
+        state = request.form.get("state", "").strip()
+        pincode = request.form.get("pincode", "").strip()
+
+        if not all([name, phone, email, address, city, state, pincode]):
+            flash("Please complete all address details.", "warning")
+            return redirect(url_for("main.add_address"))
+
+        existing_addresses = Address.query.filter_by(
+            user_id=session["user_id"]
+        ).all()
+
+        is_default = (
+            request.form.get("is_default") == "on"
+            or len(existing_addresses) == 0
+        )
+
+        if is_default:
+            for saved_address in existing_addresses:
+                saved_address.is_default = False
+
+        new_address = Address(
+            user_id=session["user_id"],
+            name=name,
+            phone=phone,
+            email=email,
+            address=address,
+            city=city,
+            state=state,
+            pincode=pincode,
+            is_default=is_default
+        )
+
+        db.session.add(new_address)
+        db.session.commit()
+
+        flash("Address saved successfully.", "success")
+        return redirect(url_for("main.my_addresses"))
+
+    return render_template("address_form.html", address=None)
+
+# EDIT ADDRESS
+@main.route("/my-addresses/edit/<int:address_id>", methods=["GET", "POST"])
+@login_required
+def edit_address(address_id):
+
+    address = Address.query.filter_by(
+        id=address_id,
+        user_id=session["user_id"]
+    ).first_or_404()
+
+    if request.method == "POST":
+
+        address.name = request.form.get("name", "").strip()
+        address.phone = request.form.get("phone", "").strip()
+        address.email = request.form.get("email", "").strip()
+        address.address = request.form.get("address", "").strip()
+        address.city = request.form.get("city", "").strip()
+        address.state = request.form.get("state", "").strip()
+        address.pincode = request.form.get("pincode", "").strip()
+
+        if not all([
+            address.name, address.phone, address.email,
+            address.address, address.city, address.state,
+            address.pincode
+        ]):
+            flash("Please complete all address details.", "warning")
+            return redirect(url_for("main.edit_address", address_id=address.id))
+
+        if request.form.get("is_default") == "on":
+            Address.query.filter_by(
+                user_id=session["user_id"]
+            ).update({"is_default": False})
+
+            address.is_default = True
+
+        db.session.commit()
+
+        flash("Address updated successfully.", "success")
+        return redirect(url_for("main.my_addresses"))
+
+    return render_template("address_form.html", address=address)
+
+
+# DELETE ADDRESS
+@main.route("/my-addresses/delete/<int:address_id>", methods=["POST"])
+@login_required
+def delete_address(address_id):
+
+    address = Address.query.filter_by(
+        id=address_id,
+        user_id=session["user_id"]
+    ).first_or_404()
+
+    db.session.delete(address)
+    db.session.commit()
+
+    flash("Address deleted successfully.", "success")
+
+    return redirect(url_for("main.my_addresses"))
+
+
+# SET DEFAULT ADDRESS
+@main.route("/my-addresses/default/<int:address_id>", methods=["POST"])
+@login_required
+def set_default_address(address_id):
+
+    address = Address.query.filter_by(
+        id=address_id,
+        user_id=session["user_id"]
+    ).first_or_404()
+
+    Address.query.filter_by(
+        user_id=session["user_id"]
+    ).update({"is_default": False})
+
+    address.is_default = True
+
+    db.session.commit()
+
+    flash("Default address updated successfully.", "success")
+
+    return redirect(url_for("main.my_addresses"))
+
+
+
 @main.route("/wishlist/toggle/<int:product_id>", methods=["POST"])
 @login_required
 def toggle_wishlist(product_id):
@@ -218,72 +370,100 @@ def toggle_wishlist(product_id):
         flash("Added to wishlist.", "success")
     db.session.commit()
     return redirect(request.referrer or url_for("main.home"))
-
 @main.route("/checkout", methods=["GET", "POST"])
 @login_required
 def checkout():
 
-    items = CartItem.query.filter_by(
-        user_id=session["user_id"]
-    ).all()
+    user_id = session["user_id"]
+
+    items = CartItem.query.filter_by(user_id=user_id).all()
 
     if not items:
         flash("Your cart is empty.", "warning")
         return redirect(url_for("main.home"))
 
-    total = sum(
-        i.product.price * i.quantity
-        for i in items
-    )
+    total = sum(i.product.price * i.quantity for i in items)
 
     if request.method == "POST":
 
         # Check stock
         for item in items:
-
             if item.quantity > item.product.stock:
-
                 flash(
                     f"Insufficient stock for {item.product.name}.",
                     "danger"
                 )
-
                 return redirect(url_for("main.cart"))
 
-        # Get checkout form data
-        name = request.form.get("name", "").strip()
-        phone = request.form.get("phone", "").strip()
-        email = request.form.get("email", "").strip()
-        address = request.form.get("address", "").strip()
-        city = request.form.get("city", "").strip()
-        state = request.form.get("state", "").strip()
-        pincode = request.form.get("pincode", "").strip()
+        # Check whether a saved address was selected
+        saved_address_id = request.form.get("saved_address_id")
+
+        if saved_address_id:
+            saved_address = Address.query.filter_by(
+                id=saved_address_id,
+                user_id=user_id
+            ).first()
+
+            if not saved_address:
+                flash("Invalid saved address.", "warning")
+                return redirect(url_for("main.checkout"))
+
+            name = saved_address.name
+            phone = saved_address.phone
+            email = saved_address.email
+            address = saved_address.address
+            city = saved_address.city
+            state = saved_address.state
+            pincode = saved_address.pincode
+
+        else:
+            # Get new address details
+            name = request.form.get("name", "").strip()
+            phone = request.form.get("phone", "").strip()
+            email = request.form.get("email", "").strip()
+            address = request.form.get("address", "").strip()
+            city = request.form.get("city", "").strip()
+            state = request.form.get("state", "").strip()
+            pincode = request.form.get("pincode", "").strip()
+
+            # Validate delivery information
+            if not all([
+                name, phone, email, address,
+                city, state, pincode
+            ]):
+                flash(
+                    "Please complete all delivery details.",
+                    "warning"
+                )
+                return redirect(url_for("main.checkout"))
+
+            # Automatically save new address
+            existing_address = Address.query.filter_by(
+                user_id=user_id
+            ).first()
+
+            new_address = Address(
+                user_id=user_id,
+                name=name,
+                phone=phone,
+                email=email,
+                address=address,
+                city=city,
+                state=state,
+                pincode=pincode,
+                is_default=(existing_address is None)
+            )
+
+            db.session.add(new_address)
+
         payment_method = request.form.get(
             "payment_method",
             "cod"
         )
 
-        # Validate delivery information
-        if not all([
-            name,
-            phone,
-            email,
-            address,
-            city,
-            state,
-            pincode
-        ]):
-
-            flash(
-                "Please complete all delivery details.",
-                "warning"
-            )
-
-            return redirect(url_for("main.checkout"))
-
         # Create order
         order = Order(
-            user_id=session["user_id"],
+            user_id=user_id,
             total=total,
             status="Pending",
             name=name,
@@ -297,11 +477,9 @@ def checkout():
         )
 
         db.session.add(order)
-
-        # Generate order ID
         db.session.flush()
 
-        # Create order items
+        # Create order items and update stock
         for item in items:
 
             item.product.stock -= item.quantity
@@ -318,13 +496,10 @@ def checkout():
 
             db.session.delete(item)
 
-        # Save order
+        # Save order and address
         db.session.commit()
 
-        flash(
-            "Order placed successfully.",
-            "success"
-        )
+        flash("Order placed successfully.", "success")
 
         return redirect(
             url_for(
@@ -334,11 +509,20 @@ def checkout():
         )
 
     # GET request
+    saved_addresses = Address.query.filter_by(
+        user_id=user_id
+    ).order_by(
+        Address.is_default.desc(),
+        Address.created_at.desc()
+    ).all()
+
     return render_template(
         "checkout.html",
         items=items,
-        total=total
+        total=total,
+        saved_addresses=saved_addresses
     )
+    
 @main.route("/orders")
 @login_required
 def orders():
@@ -617,8 +801,6 @@ def admin_orders():
         "admin_orders.html",
         orders=orders
     )
-
-
 @main.route("/admin/orders/<int:order_id>")
 @admin_required
 def admin_order_detail(order_id):
@@ -629,7 +811,6 @@ def admin_order_detail(order_id):
         "admin_order_detail.html",
         order=order
     )
-
 
 @main.route(
     "/admin/orders/<int:order_id>/status",
@@ -651,28 +832,26 @@ def admin_update_order(order_id):
     status = request.form.get("status")
 
     if status not in allowed_statuses:
+        flash("Invalid order status.", "danger")
+        return redirect(url_for("main.admin_orders"))
 
-        flash(
-            "Invalid order status.",
-            "danger"
-        )
+    # Restore stock only when cancelling an active order
+    if status == "Cancelled" and order.status != "Cancelled":
 
-        return redirect(
-            url_for("main.admin_orders")
-        )
+        for item in order.items:
+            product = Product.query.get(item.product_id)
+
+            if product:
+                product.stock += item.quantity
 
     order.status = status
 
     db.session.commit()
 
-    flash(
-        "Order status updated.",
-        "success"
-    )
+    flash("Order status updated.", "success")
 
-    return redirect(
-        url_for("main.admin_orders")
-    )
+    return redirect(url_for("main.admin_orders"))
+
 
 
 @main.route("/admin/users")
