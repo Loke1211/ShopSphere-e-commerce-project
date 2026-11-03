@@ -63,7 +63,8 @@
 
                                 <option value="{{ a.id }}" data-name="{{ a.name }}" data-phone="{{ a.phone }}"
                                     data-email="{{ a.email }}" data-address="{{ a.address }}" data-city="{{ a.city }}"
-                                    data-state="{{ a.state }}" data-pincode="{{ a.pincode }}">
+                                    data-state="{{ a.state }}" data-pincode="{{ a.pincode }}" {% if a.is_default
+                                    %}selected{% endif %}>
 
                                     {{ a.name }} - {{ a.city }} ({{ a.pincode }})
                                     {% if a.is_default %} - Default{% endif %}
@@ -408,7 +409,6 @@
 
 </section>
 
-
 <script>
     document.addEventListener("DOMContentLoaded", function () {
 
@@ -416,9 +416,9 @@
 
         if (!savedAddress) return;
 
-        savedAddress.addEventListener("change", function () {
+        function fillAddress() {
 
-            const option = this.options[this.selectedIndex];
+            const option = savedAddress.options[savedAddress.selectedIndex];
 
             const fields = {
                 name: "name",
@@ -437,18 +437,24 @@
                 );
 
                 if (input) {
-                    input.value = this.value
+                    input.value = savedAddress.value
                         ? option.getAttribute(`data-${dataKey}`) || ""
                         : "";
                 }
 
             });
+        }
 
-        });
+        // Fill when customer selects another address
+        savedAddress.addEventListener("change", fillAddress);
+
+        // Fill default address automatically when checkout opens
+        if (savedAddress.value) {
+            fillAddress();
+        }
 
     });
 </script>
-
 <script>
     document.addEventListener("DOMContentLoaded", function () {
 
