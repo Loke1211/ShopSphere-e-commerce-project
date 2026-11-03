@@ -8,16 +8,18 @@
         {{ "Edit Address" if address else "Add New Address" }}
     </h2>
 
-    <form method="POST">
+    <form method="POST" id="addressForm" novalidate>
 
         <div class="mb-3">
             <label class="form-label">Full Name</label>
-            <input type="text" name="name" class="form-control" value="{{ address.name if address else '' }}" required>
+            <input type="text" name="name" id="fullName" class="form-control"
+                value="{{ address.name if address else '' }}" required>
         </div>
 
         <div class="mb-3">
             <label class="form-label">Phone Number</label>
-            <input type="tel" name="phone" class="form-control" value="{{ address.phone if address else '' }}" required>
+            <input type="tel" name="phone" id="phone" class="form-control" maxlength="10" inputmode="numeric"
+                value="{{ address.phone if address else '' }}" required>
         </div>
 
         <div class="mb-3">
@@ -38,17 +40,38 @@
                 <input type="text" name="city" class="form-control" value="{{ address.city if address else '' }}"
                     required>
             </div>
-
             <div class="col-md-6 mb-3">
                 <label class="form-label">State</label>
-                <input type="text" name="state" class="form-control" value="{{ address.state if address else '' }}"
-                    required>
+
+                <select name="state" class="form-select" required>
+                    <option value="">Select State</option>
+
+                    {% set states = [
+                    "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar",
+                    "Chhattisgarh", "Goa", "Gujarat", "Haryana",
+                    "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala",
+                    "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya",
+                    "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan",
+                    "Sikkim", "Tamil Nadu", "Telangana", "Tripura",
+                    "Uttar Pradesh", "Uttarakhand", "West Bengal",
+                    "Andaman and Nicobar Islands", "Chandigarh",
+                    "Dadra and Nagar Haveli and Daman and Diu",
+                    "Delhi", "Jammu and Kashmir", "Ladakh",
+                    "Lakshadweep", "Puducherry"
+                    ] %}
+
+                    {% for s in states %}
+                    <option value="{{ s }}" {% if address and address.state==s %}selected{% endif %}>
+                        {{ s }}
+                    </option>
+                    {% endfor %}
+                </select>
             </div>
         </div>
 
         <div class="mb-3">
             <label class="form-label">PIN Code</label>
-            <input type="text" name="pincode" maxlength="10" class="form-control"
+            <input type="text" name="pincode" id="pincode" maxlength="6" inputmode="numeric" class="form-control"
                 value="{{ address.pincode if address else '' }}" required>
         </div>
 
@@ -71,5 +94,58 @@
     </form>
 
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const form = document.getElementById("addressForm");
+
+        const name = document.getElementById("fullName");
+        const phone = document.getElementById("phone");
+        const pincode = document.getElementById("pincode");
+        const email = form.querySelector('[name="email"]');
+
+        form.addEventListener("submit", function (event) {
+
+            // Clear previous errors
+            [name, phone, pincode, email].forEach(field => {
+                field.setCustomValidity("");
+            });
+
+            // Full name validation
+            if (!/^[A-Za-z ]+$/.test(name.value.trim())) {
+                name.setCustomValidity("Enter a valid full name");
+            }
+
+            // Mobile number validation
+            if (!/^[0-9]{10}$/.test(phone.value.trim())) {
+                phone.setCustomValidity(
+                    "Enter a valid 10-digit mobile number"
+                );
+            }
+
+            // Email validation
+            if (!email.validity.valid || !email.value.trim()) {
+                email.setCustomValidity("Enter a valid email address");
+            }
+
+            // PIN validation
+            if (!/^[0-9]{6}$/.test(pincode.value.trim())) {
+                pincode.setCustomValidity(
+                    "Enter a valid 6-digit PIN code"
+                );
+            }
+
+            // Show validation message
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                form.reportValidity();
+            }
+
+        });
+
+    });
+</script>
+
 
 {% endblock %}

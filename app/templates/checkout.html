@@ -25,7 +25,7 @@
         </div>
 
 
-        <form method="post">
+        <form method="post" id="checkoutForm" novalidate>
 
             <div class="row g-4">
 
@@ -97,9 +97,8 @@
                                     Phone Number
                                 </label>
 
-                                <input type="tel" name="phone" class="checkout-input" placeholder="Enter phone number"
-                                    required>
-
+                                <input type="tel" id="delivery_phone" name="phone" class="checkout-input"
+                                    placeholder="Enter phone number" maxlength="10" inputmode="numeric" required>
                             </div>
 
 
@@ -109,8 +108,8 @@
                                     Email Address
                                 </label>
 
-                                <input type="email" name="email" class="checkout-input" placeholder="Enter your email"
-                                    required>
+                                <input type="email" id="delivery_email" name="email" class="checkout-input"
+                                    placeholder="Enter your email" required>
 
                             </div>
 
@@ -144,7 +143,29 @@
                                     State
                                 </label>
 
-                                <input type="text" name="state" class="checkout-input" placeholder="State" required>
+                                <select name="state" class="checkout-input" required>
+
+                                    <option value="">Select State</option>
+
+                                    {% set states = [
+                                    "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar",
+                                    "Chhattisgarh", "Goa", "Gujarat", "Haryana",
+                                    "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala",
+                                    "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya",
+                                    "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan",
+                                    "Sikkim", "Tamil Nadu", "Telangana", "Tripura",
+                                    "Uttar Pradesh", "Uttarakhand", "West Bengal",
+                                    "Andaman and Nicobar Islands", "Chandigarh",
+                                    "Dadra and Nagar Haveli and Daman and Diu",
+                                    "Delhi", "Jammu and Kashmir", "Ladakh",
+                                    "Lakshadweep", "Puducherry"
+                                    ] %}
+
+                                    {% for s in states %}
+                                    <option value="{{ s }}">{{ s }}</option>
+                                    {% endfor %}
+
+                                </select>
 
                             </div>
 
@@ -155,8 +176,8 @@
                                     PIN Code
                                 </label>
 
-                                <input type="text" name="pincode" class="checkout-input" placeholder="PIN" maxlength="6"
-                                    required>
+                                <input type="text" id="delivery_pincode" name="pincode" class="checkout-input"
+                                    placeholder="PIN" maxlength="6" inputmode="numeric" required>
 
                             </div>
 
@@ -422,6 +443,54 @@
                 }
 
             });
+
+        });
+
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const form = document.getElementById("checkoutForm");
+
+        if (!form) return;
+
+        const name = document.getElementById("delivery_name");
+        const phone = document.getElementById("delivery_phone");
+        const email = document.getElementById("delivery_email");
+        const pincode = document.getElementById("delivery_pincode");
+
+        form.addEventListener("submit", function (event) {
+
+            [name, phone, email, pincode].forEach(field => {
+                field.setCustomValidity("");
+            });
+
+            if (!/^[A-Za-z][A-Za-z .'-]*$/.test(name.value.trim())) {
+                name.setCustomValidity("Enter a valid full name");
+            }
+
+            if (!/^[0-9]{10}$/.test(phone.value.trim())) {
+                phone.setCustomValidity(
+                    "Enter a valid 10-digit mobile number"
+                );
+            }
+
+            if (!email.value.trim() || !email.validity.valid) {
+                email.setCustomValidity("Enter a valid email address");
+            }
+
+            if (!/^[0-9]{6}$/.test(pincode.value.trim())) {
+                pincode.setCustomValidity(
+                    "Enter a valid 6-digit PIN code"
+                );
+            }
+
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                form.reportValidity();
+            }
 
         });
 
